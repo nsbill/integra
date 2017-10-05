@@ -69,11 +69,10 @@ def query_with_invmax():
         cursor.execute('SELECT max(d.invoice_num), count(*) \
                         FROM docs_invoices d \
                         WHERE YEAR(date)=YEAR(now())')
-
         u = []
         for row in iter_row(cursor, 10):
-            u.append(row)
-
+           u.append(row)
+ #       print(u)
     except Error as e:
         print(e)
 

@@ -25,22 +25,48 @@ class IntegraClass:
 #            print(self.users)
         return self.users
 
-    def pay(self,p):             # Запрос пополнения лицевого счета
+    def pay(self,details):             # Запрос пополнения лицевого счета
         if self.users.get('Status') == 0:
-            self.PayerCode = p
+#            self.PayerCode = details.get('PayerCode')
+#            print(self.PayerCode)
             aid = 19             # id администратора в биллинге
-            deposit = query_with_deposit(n=self.check(p))
-            print (deposit)
-            print(self.check(p))
-            print(self.PayerCode)
+            deposit = query_with_deposit(n=details.get('PayerCode'))
+            details['balance'] = deposit[0][1]
+            details['login'] = deposit[0][2]
+            details['uid'] = deposit[0][3]
+
+            print (deposit[0][3])
+            invmax = query_with_invmax()
+            print(invmax)
+            print(details)
+            print(invmax)
+            n = invmax[0][0]
+            n = n + 1
+            print(n)
+            ins_docs_inv = insert_with_docs_inv(n=n, a=aid, u=details.get('uid'), d=details.get('balance'))  # вставка в docs_invoices
+            print(ins_docs_inv)
+            doc_inv = query_with_docs_inv(n=details.get('uid'))
+            print(doc_inv)
+            inv = doc_inv[0][0]
+            ins_docs_ord = insert_with_docs_inv_orders(inv=inv, sum=details.get('S'))
+            print(ins_docs_ord)
+            upd = update_with_deposit(uid=details.get('uid'), d=details.get('balance'), sum=details.get('S'))
+            print(upd)
+            ins_payment = insert_with_payment(uid=details.get('uid'), bill_id=details.get('PayerCode'), sum=details.get('S'), ip=details.get('remote_address'), d=details.get('balance'), aid=aid)
+            print(ins_payment)
+            p = query_with_payment(n=details.get('uid'))
+            print(p)
+
+#            print(self.check(PayerCode))
+#            print(self.PayerCode)
             print('Status 0')
-            print('--- dict pay ---')
-            self.users['ServiceName'] = 'Internet'
-            self.users['PayerCode'] = self.numbers
-            print('--- dict end pay ---')
-            print(self.users)
+#            print('--- dict pay ---')
+#            self.users['ServiceName'] = 'Internet'
+#            self.users['PayerCode'] = self.numbers
+#            print('--- dict end pay ---')
+#            print(self.users)
         else:
-            print('Status 100')
+            print('Status 100 PAY')
 
     def reconciliation(self):  # Запрос на сверку взаиморасчетов
         pass
@@ -75,7 +101,7 @@ if __name__ == '__main__':
 #        #self.s = self.check(p)
 #        #print(self.s)
 #
- 
+
 # def mwhere(self,n):
 #           if n <= 0:
 #                self.where = "отсутствуют"

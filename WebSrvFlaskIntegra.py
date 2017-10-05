@@ -19,15 +19,19 @@ def check(): # Запрос проверки существования лице
 @app.route('/pay', methods=['GET'])
 
 def pay(): # Запрос пополнения лицевого счета
-    PayerCode = request.args['PayerCode']       # Лицевой счет, код или другой идентификатор плательщика
-    ServiceName = request.args['ServiceName']   # Наименование услуги
-    NTran = request.args['NTran']               # Уникальный номер транзакции
-    DTran = request.args['DTran']               # Дата транзакции в формате ггггММддЧЧммсс
-    S = request.args['S']                       # Сумма платежа
-
-    info = IntegraClass(PayerCode)
-    print(info)
-    pay = info.pay(PayerCode)
+    details = {
+    'PayerCode' : request.args['PayerCode'],       # Лицевой счет, код или другой идентификатор плательщика
+    'ServiceName' : request.args['ServiceName'],   # Наименование услуги
+    'NTran' : request.args['NTran'],               # Уникальный номер транзакции
+    'DTran' : request.args['DTran'],               # Дата транзакции в формате ггггММддЧЧммсс
+    'S' : request.args['S'],                       # Сумма платежа
+    'remote_address' : request.remote_addr,        # IP адрес
+    }
+    print(details)
+    info = IntegraClass(details.get('PayerCode'))
+#    print(info)
+#    print(details )
+    pay = info.pay(details)
     print(pay)
     return str(pay)
 

@@ -92,7 +92,7 @@ def update_with_deposit(uid,d,sum): # uid = userUID , sum = сумма попо�
         sum_upd = float(d) + float(sum)
         print(sum_upd)
 
-        cursor.execute('UPDATE bills SET deposit='+ str(sum_upd) +' WHERE id='+ str(uid) +' ')
+        cursor.execute('UPDATE bills SET deposit='+ str(sum_upd) +' WHERE uid='+ str(uid) +' ')
         print('===end upd deposit===')
 
         all = {}
@@ -111,7 +111,7 @@ def update_with_deposit(uid,d,sum): # uid = userUID , sum = сумма попо�
     if __name__ == '__main__':
         update_with_deposit(uid, d, sum)
 
-def insert_with_payment(uid,sum,ip,d,aid): # uid = userUID , sum = сумма пополнения, d = депозит до пополнения, ip = IPAddress
+def insert_with_payment(uid,bill_id,sum,ip,d,aid): # uid = userUID , sum = сумма пополнения, d = депозит до пополнения, ip = IPAddress
     try:
         dbconfig = read_db_config()
         conn = MySQLConnection(**dbconfig)
@@ -127,9 +127,9 @@ def insert_with_payment(uid,sum,ip,d,aid): # uid = userUID , sum = сумма п
         ip = int(ipaddress.IPv4Address(ip))
         print(ip)
         cursor.execute('INSERT INTO payments (uid, bill_id, date, sum, dsc, ip, last_deposit, aid, method, ext_id, \
-                                    inner_describe, amount, currency, reg_date) \
-                        values ('+ str(uid) +', '+ str(uid) +', '+ str(now) +', '+ str(sum) +', "", '+str(ip)+', \
-                         '+ str(d) +', '+ str(aid) +', 2,"", "", '+ str(sum) +', 0, '+ str(now) +') ')
+                                    inner_describe, amount, currency) \
+                        values ('+ str(uid) +', '+ str(bill_id) +', '+ str(now) +', '+ str(sum) +', "", '+str(ip)+', \
+                         '+ str(d) +', '+ str(aid) +', 2,"", "", '+ str(sum) +', 0 ) ')
 
         print('===end ins payments===')
         all = {}
