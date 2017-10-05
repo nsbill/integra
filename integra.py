@@ -1,4 +1,5 @@
-from mysql_select import query_check  # Подключения базы данных и выборка данных о пользователе.
+from mysql_select import query_check query_with_deposit query_with_invmax query_with_docs_inv query_with_payment # Подключения базы данных и выборка данных о пользователе.
+from mysql_insert import insert_with_docs_inv insert_with_docs_inv_orders update_with_deposit insert_with_payment insert_with_docs_invoice2payments
 import random, datetime
 
 class IntegraClass:
@@ -12,7 +13,7 @@ class IntegraClass:
     def check(self,n):           # Запрос проверки существования лицевого счета
         self.user = query_check(self.numbers)
         self.users = dict()
-        if self.user:
+        if self.user:           # Проверка пользователя
             for value in self.user:
                 self.users['Status'] = 0
 #                self.users['uid'] = value[0]
@@ -27,6 +28,7 @@ class IntegraClass:
     def pay(self,p):             # Запрос пополнения лицевого счета
         if self.users.get('Status') == 0:
             self.PayerCode = p
+            aid = 19             # id администратора в биллинге
             self.check(p)
             print(self.check(p))
             print(self.PayerCode)
