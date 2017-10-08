@@ -1,5 +1,5 @@
 from mysql_select import query_check, query_with_deposit, query_with_invmax, query_with_docs_inv, query_with_payment # Подключения базы данных и выборка данных о пользователе.
-from mysql_insert import insert_with_docs_inv, insert_with_docs_inv_orders, update_with_deposit, insert_with_payment, insert_with_docs_invoice2payments
+from mysql_insert import insert_with_docs_inv, insert_with_docs_inv_orders, update_with_deposit, insert_with_payment, insert_with_docs_invoice2payments, ins_integra_check, ins_integra_pay
 import random, datetime
 
 class IntegraClass:
@@ -8,7 +8,16 @@ class IntegraClass:
     def __init__(self,n=0):
         self.numbers = n
         self.check(n)
-#        return print(self.check(n))
+
+    def log_check(data):
+        ins_data = ins_integra_check(data)
+#        print(data)
+        return data
+
+    def log_pay(data):
+        ins_data = ins_integra_pay(data)
+        print(ins_data)
+        return ins_data
 
     def check(self,n):           # Запрос проверки существования лицевого счета
         self.user = query_check(self.numbers)
@@ -19,6 +28,7 @@ class IntegraClass:
 #                self.users['uid'] = value[0]
 #                self.users['PayerCode'] = value[1]
                 self.users['fio'] = value[2]
+
             return self.users
         else:
             self.users['Status'] = 100
@@ -34,12 +44,12 @@ class IntegraClass:
             details['balance'] = deposit[0][1]
             details['login'] = deposit[0][2]
             details['uid'] = deposit[0][3]
-
+            details['Status'] = 0
+            details['FIO'] = details.get('info')
             print (deposit[0][3])
             invmax = query_with_invmax()
             print(invmax)
             print(details)
-            print(invmax)
             n = invmax[0][0]
             n = n + 1
             print(n)
@@ -59,14 +69,24 @@ class IntegraClass:
 
 #            print(self.check(PayerCode))
 #            print(self.PayerCode)
-            print('Status 0')
 #            print('--- dict pay ---')
 #            self.users['ServiceName'] = 'Internet'
 #            self.users['PayerCode'] = self.numbers
 #            print('--- dict end pay ---')
 #            print(self.users)
+            print('---details---')
+            print(details)
+            responce={}
+            responce['Status'] = details.get('Status')
+            responce['NTran'] = details.get('NTran')
+            responce['FIO'] = details.get('fio')
+            responce['Balance'] = details.get('balance')
+            return responce
         else:
             print('Status 100 PAY')
+        print('---PAY_USERS---')
+        print(self.users)
+        return self.users
 
     def reconciliation(self):  # Запрос на сверку взаиморасчетов
         pass

@@ -1,7 +1,7 @@
 #!/usr/local/bin/python3
 from flask import Flask, request
-#from mysql_select import query_check
-from integra import IntegraClass 
+from integra import IntegraClass
+import datetime
 
 app = Flask(__name__)
 
@@ -9,30 +9,45 @@ app = Flask(__name__)
 
 
 def check(): # Запрос проверки существования лицевого счета
-    PayerCode = request.args['PayerCode']       # Лицевой счет, код или другой идентификатор плательщика
-    ServiceName= request.args['ServiceName']    # Наименование услуги
+    now = datetime.datetime.now()
+    data = {
+        'PayerCode': request.args['PayerCode'],       # Лицевой счет, код или другой идентификатор плательщика
+        'ServiceName': request.args['ServiceName'],   # Наименование услуги
+        'remote_address' : request.remote_addr,       # IP адрес
+#        'date': now.strftime("%Y%m%d%H%M%S"),        # Время запроса  
+        'date': now,
+    }
 
-    info = IntegraClass(PayerCode)
-    info = info.check(PayerCode)
+    info = IntegraClass(data.get('PayerCode'))
+    info = info.check(data)
+#    print(info)
+    data['info'] =  info
+    checklog = IntegraClass.log_check(data=data)
     return str(info)
 
 @app.route('/pay', methods=['GET'])
 
 def pay(): # Запрос пополнения лицевого счета
+    now = datetime.datetime.now()
     details = {
+    'date': now,                                   # дата запроса
     'PayerCode' : request.args['PayerCode'],       # Лицевой счет, код или другой идентификатор плательщика
     'ServiceName' : request.args['ServiceName'],   # Наименование услуги
     'NTran' : request.args['NTran'],               # Уникальный номер транзакции
     'DTran' : request.args['DTran'],               # Дата транзакции в формате ггггММддЧЧммсс
     'S' : request.args['S'],                       # Сумма платежа
     'remote_address' : request.remote_addr,        # IP адрес
-    }
+#    'Status' : request.args['Status'],             # Результат выполнения запроса
+     }
     print(details)
     info = IntegraClass(details.get('PayerCode'))
-#    print(info)
-#    print(details )
+    print('WEB info')
     pay = info.pay(details)
     print(pay)
+
+    details['info'] = pay
+    logpay = IntegraClass.log_pay(data=details)
+    print(logpay)
     return str(pay)
 
 if __name__ == '__main__':
