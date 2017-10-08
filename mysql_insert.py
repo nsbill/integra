@@ -218,18 +218,25 @@ def ins_integra_pay(data): # uid = userUID , sum = сумма пополнени
         conn = MySQLConnection(**dbconfig)
         cursor = conn.cursor()
         print('===ins integra_pay ===')
+        print(data)
         time = data.get('date').strftime("%Y%m%d%H%M%S") # время запроса
         payer_code = str(data.get('PayerCode'))          # лицевой счет
         service_name = data.get('ServiceName')           # наименование услуги
-#        st = data.get('info')                            # 
+        st = str(data.get('info'))                            # 
         st = int(data.get('Status'))                       # статус ответа запроса
         ntran = data.get('NTran')                        # уникальный номер транзакции
         dtran = data.get('DTran')                        # дата транзакции
         s = data.get('S')                                # сумма платежа
+        login = data.get('login')                        # логин пользователя
+        uid = data.get('uid')                            # UID пользователя
         info_conn = str(data.get('info'))                # ответ на запрос
+        print('---INFO---')
+        print(info_conn)
+#        info_conn['login'] = str(login)
+#        info_conn['uid'] = str(uid)
         ip = data.get('remote_address')                  # запрос с какого ip адреса
 #        ip = ipaddress.IPv4Address(str(ip))
-        cursor.execute("""INSERT INTO integra_pay (date,payercode,sevicename,status,ntran,dtran,s,info,ip) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)""",(time,payer_code,service_name,st,ntran,dtran,s,info_conn,ip))
+        cursor.execute("""INSERT INTO integra_pay (date,payercode,sevicename,status,ntran,dtran,s,info,ip,login) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",(time,payer_code,service_name,st,ntran,dtran,s,info_conn,ip,login))
         print(data)
         print('=== end ins integra_pay ===')
         all = {}
@@ -237,7 +244,7 @@ def ins_integra_pay(data): # uid = userUID , sum = сумма пополнени
         for row in iter_row(cursor, 10):
             all = row
 #            print(all)
-        return all
+#        return all
     except Error as e:
         print(e)
 

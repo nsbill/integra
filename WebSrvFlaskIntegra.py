@@ -37,7 +37,6 @@ def pay(): # Запрос пополнения лицевого счета
     'DTran' : request.args['DTran'],               # Дата транзакции в формате ггггММддЧЧммсс
     'S' : request.args['S'],                       # Сумма платежа
     'remote_address' : request.remote_addr,        # IP адрес
-#    'Status' : request.args['Status'],             # Результат выполнения запроса
      }
     print(details)
     info = IntegraClass(details.get('PayerCode'))
@@ -47,6 +46,7 @@ def pay(): # Запрос пополнения лицевого счета
 
     details['FIO'] = info_check.get('fio')
     pay = info.pay(details)
+    print('--PAY_INFO--')
     print(pay)
     details['info'] = pay
 

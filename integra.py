@@ -15,6 +15,7 @@ class IntegraClass:
         return data
 
     def log_pay(data):
+        print('---LOG_PAY---')
         ins_data = ins_integra_pay(data)
         print(ins_data)
         return ins_data
@@ -37,8 +38,6 @@ class IntegraClass:
 
     def pay(self,details):             # Запрос пополнения лицевого счета
         if self.users.get('Status') == 0:
-#            self.PayerCode = details.get('PayerCode')
-#            print(self.PayerCode)
             aid = 19             # id администратора в биллинге
             deposit = query_with_deposit(n=details.get('PayerCode'))
             details['balance'] = deposit[0][1]
@@ -71,11 +70,12 @@ class IntegraClass:
             print(details)
             responce={}
             responce['Status'] = details.get('Status')
-            responce['NTran'] = details.get('NTran')
+            responce['Ntran'] = details.get('NTran')
             responce['FIO'] = details.get('FIO')
             responce['Balance'] = details.get('balance')
             return responce
         else:
+            details['Status'] = 100
             print('Status 100 PAY')
         print('---PAY_USERS---')
         print(self.users)
@@ -89,31 +89,6 @@ class IntegraClass:
 
 if __name__ == '__main__':
    IntegraClass()
-
-#    def pay(self,p):             # Запрос пополнения лицевого счета
-#        if self.users.get('Status') == 0:
-#            now = datetime.datetime.now()
-#            #print(self.users)
-#            #print(p)
-#            print('Status 0')
-#            print('--- dict pay ---')
-#            self.users['ServiceName'] = 'Internet'
-#            self.users['PayerCode'] = self.numbers
-#            l = list('123456789')
-#            random.shuffle(l)
-#            psw = ''.join([random.choice(l) for x in range(10)])
-#            self.users['NTran'] = psw
-#            self.users['DTran'] = now.strftime("%Y%m%d%H%M%S")
-#            self.users['S'] = p
-#            print('--- dict end pay ---')
-#            print(self.users)
-#        else:
-#            print('Status 100')
-#        #print(self.users)
-#        #self.numbers = self.numbers + p
-#        #self.s = self.check(p)
-#        #print(self.s)
-#
 
 # def mwhere(self,n):
 #           if n <= 0:
