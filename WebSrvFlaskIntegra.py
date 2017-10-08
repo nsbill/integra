@@ -42,10 +42,14 @@ def pay(): # Запрос пополнения лицевого счета
     print(details)
     info = IntegraClass(details.get('PayerCode'))
     print('WEB info')
+    info_check = info.check(details.get('PayerCode'))
+    print(info_check.get('fio'))
+
+    details['FIO'] = info_check.get('fio')
     pay = info.pay(details)
     print(pay)
-
     details['info'] = pay
+
     logpay = IntegraClass.log_pay(data=details)
     print(logpay)
     return str(pay)

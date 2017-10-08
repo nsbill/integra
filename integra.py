@@ -45,7 +45,7 @@ class IntegraClass:
             details['login'] = deposit[0][2]
             details['uid'] = deposit[0][3]
             details['Status'] = 0
-            details['FIO'] = details.get('info')
+            details['FIO'] = details.get('FIO')
             print (deposit[0][3])
             invmax = query_with_invmax()
             print(invmax)
@@ -67,19 +67,12 @@ class IntegraClass:
             p = query_with_payment(n=details.get('uid'))
             print(p)
 
-#            print(self.check(PayerCode))
-#            print(self.PayerCode)
-#            print('--- dict pay ---')
-#            self.users['ServiceName'] = 'Internet'
-#            self.users['PayerCode'] = self.numbers
-#            print('--- dict end pay ---')
-#            print(self.users)
             print('---details---')
             print(details)
             responce={}
             responce['Status'] = details.get('Status')
             responce['NTran'] = details.get('NTran')
-            responce['FIO'] = details.get('fio')
+            responce['FIO'] = details.get('FIO')
             responce['Balance'] = details.get('balance')
             return responce
         else:

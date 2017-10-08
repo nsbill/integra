@@ -217,12 +217,12 @@ def ins_integra_pay(data): # uid = userUID , sum = сумма пополнени
         dbconfig = read_db_config()
         conn = MySQLConnection(**dbconfig)
         cursor = conn.cursor()
-#        print('===ins integra_check===')
+        print('===ins integra_pay ===')
         time = data.get('date').strftime("%Y%m%d%H%M%S") # время запроса
         payer_code = str(data.get('PayerCode'))          # лицевой счет
         service_name = data.get('ServiceName')           # наименование услуги
-        st = data.get('info')                            # 
-        st = int(st.get('Status'))                       # статус ответа запроса
+#        st = data.get('info')                            # 
+        st = int(data.get('Status'))                       # статус ответа запроса
         ntran = data.get('NTran')                        # уникальный номер транзакции
         dtran = data.get('DTran')                        # дата транзакции
         s = data.get('S')                                # сумма платежа
@@ -230,7 +230,8 @@ def ins_integra_pay(data): # uid = userUID , sum = сумма пополнени
         ip = data.get('remote_address')                  # запрос с какого ip адреса
 #        ip = ipaddress.IPv4Address(str(ip))
         cursor.execute("""INSERT INTO integra_pay (date,payercode,sevicename,status,ntran,dtran,s,info,ip) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)""",(time,payer_code,service_name,st,ntran,dtran,s,info_conn,ip))
-#        print('=== end ins integra_check ===')
+        print(data)
+        print('=== end ins integra_pay ===')
         all = {}
 
         for row in iter_row(cursor, 10):
