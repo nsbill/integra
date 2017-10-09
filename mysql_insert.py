@@ -212,24 +212,26 @@ def ins_integra_check(data): # uid = userUID , sum = сумма пополнен
     if __name__ == '__main__':
         ins_integra_check(data)
 
-def ins_integra_pay(data): # uid = userUID , sum = сумма пополнения, d = депозит до пополнения, ip = IPAddress
+def ins_integra_pay(data,info): # uid = userUID , sum = сумма пополнения, d = депозит до пополнения, ip = IPAddress
     try:
         dbconfig = read_db_config()
         conn = MySQLConnection(**dbconfig)
         cursor = conn.cursor()
         print('===ins integra_pay ===')
+        print(info)
         print(data)
         time = data.get('date').strftime("%Y%m%d%H%M%S") # время запроса
         payer_code = str(data.get('PayerCode'))          # лицевой счет
         service_name = data.get('ServiceName')           # наименование услуги
-        st = str(data.get('info'))                            # 
-        st = int(data.get('Status'))                       # статус ответа запроса
+#        st = str(data.get('info'))                            # 
+        st = int(info.get('Status'))                       # статус ответа запроса
         ntran = data.get('NTran')                        # уникальный номер транзакции
         dtran = data.get('DTran')                        # дата транзакции
         s = data.get('S')                                # сумма платежа
         login = data.get('login')                        # логин пользователя
         uid = data.get('uid')                            # UID пользователя
-        info_conn = str(data.get('info'))                # ответ на запрос
+#        info_conn = str(data.get('info'))                # ответ на запрос
+        info_conn = str(info)
         print('---INFO---')
         print(info_conn)
 #        info_conn['login'] = str(login)
@@ -253,4 +255,4 @@ def ins_integra_pay(data): # uid = userUID , sum = сумма пополнени
         conn.close()
 
     if __name__ == '__main__':
-         ins_integra_pay(data)
+         ins_integra_pay(data,info)

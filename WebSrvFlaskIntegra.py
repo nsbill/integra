@@ -29,6 +29,7 @@ def check(): # Запрос проверки существования лице
 
 def pay(): # Запрос пополнения лицевого счета
     now = datetime.datetime.now()
+
     details = {
     'date': now,                                   # дата запроса
     'PayerCode' : request.args['PayerCode'],       # Лицевой счет, код или другой идентификатор плательщика
@@ -43,16 +44,36 @@ def pay(): # Запрос пополнения лицевого счета
     print('WEB info')
     info_check = info.check(details.get('PayerCode'))
     print(info_check.get('fio'))
-
-    details['FIO'] = info_check.get('fio')
-    pay = info.pay(details)
-    print('--PAY_INFO--')
-    print(pay)
-    details['info'] = pay
-
-    logpay = IntegraClass.log_pay(data=details)
-    print(logpay)
-    return str(pay)
+    status={
+    'Status' : details.get('Status'),
+    'NTran' : details.get('NTran'),
+    'FIO' : info_check.get('fio'),
+    'sum' : 'Недопустимая сумма платежа. Пополнения от 50 до 5000 руб',
+    }
+    if float(details.get('S')) < 50:
+        print('Low')
+        status['Status'] = 106
+        logpay = IntegraClass.log_pay(data=details,info=status)
+        print(logpay)
+    elif 50 <= float(details.get('S')) <= 5000:
+        pay = info.pay(details)
+        print('--PAY_INFO--')
+        print(pay)
+        details['info'] = pay
+        details['FIO'] = info_check.get('fio')
+        status['Status'] = 0
+        status['Balance'] = float(details.get('balance'))+float(details.get('S'))
+        status['sum'] = 'Успешно пополнен'
+        logpay = IntegraClass.log_pay(data=details,info=status)
+        print(logpay)
+        print('Mid')
+#        return str(pay)
+    else:
+        print('High')
+        status['Status'] = 106
+        logpay = IntegraClass.log_pay(data=details,info=status)
+        print(logpay)
+    return str(status)
 
 if __name__ == '__main__':
     app.run('127.0.0.10',6969)

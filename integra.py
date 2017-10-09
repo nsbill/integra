@@ -14,9 +14,9 @@ class IntegraClass:
 #        print(data)
         return data
 
-    def log_pay(data):
+    def log_pay(data,info='LogPayNull'):
         print('---LOG_PAY---')
-        ins_data = ins_integra_pay(data)
+        ins_data = ins_integra_pay(data,info)
         print(ins_data)
         return ins_data
 
