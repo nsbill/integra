@@ -20,39 +20,22 @@ class IntegraClass:
         print(ins_data)
         return ins_data
 
-    def check(self,n):
-        ''' Запрос проверки существования лицевого счета '''
-
-        self.user = query_with_deposit(self.numbers) # Выборка данных о пользователе
+    def check(self,n):           # Запрос проверки существования лицевого счета
+        self.user = query_check(self.numbers)
         self.users = dict()
-#        print(self.user)
-        if self.user:                               # Проверка пользователя
-            for value in self.user:                 # Записываем в словарь заначение выборки
-                self.users['Status'] = 0            # Статус: Запрос выполнен успешно
-                self.users['PayerCode'] = value[0]  # Лицевой счет
-                self.users['UID'] = value[1]        # UID пользователя
-#                self.users['login'] = value[2]     # Логин пользователя
-                self.users['FIO'] = value[3]        # Ф.И.О пользователя
-                self.users['Balance'] = value[4]    # Баланс пользователя
-                self.users['Disable'] =  value[5]   # Вкл/Откл пользователь
-#                print(self.users.get('Disable'))   # Пользователь был удален, а счет остался
-                if self.users.get('Disable') == None: # Проверка отключен пользователь в биллинге
-                   self.users['Status'] = 100       #  Статус: Лицевой счет не найден
-                   self.users['FIO'] = None
-                   self.users['Balance'] = None
-                elif self.users.get('Disable') == 0:
-                   self.users['Status'] = 0         # Статус: Запрос выполнен успешно
-                else:
-                   self.users['Status'] = 105       # Статус: Прием платежей запрещен
+        if self.user:           # Проверка пользователя
+            for value in self.user:
+                self.users['Status'] = 0
+#                self.users['uid'] = value[0]
+#                self.users['PayerCode'] = value[1]
+                self.users['fio'] = value[2]
+                self.users['disable'] =  value[3]
+            print(self.users)
+            return self.users
         else:
-            self.users['Status'] = 100              # Статус: Лицевой счет не найден
-
-        info = {
-            'Status': self.users.get('Status'),
-            'FIO': self.users.get('FIO'),
-            'Balance': self.users.get('Balance'),
-            }
-        return info
+            self.users['Status'] = 100
+#            print(self.users)
+        return self.users
 
     def pay(self,details):             # Запрос пополнения лицевого счета
         if self.users.get('Status') == 0:

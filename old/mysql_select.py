@@ -40,16 +40,11 @@ def query_with_deposit(n):
         conn = MySQLConnection(**dbconfig)
         cursor = conn.cursor()
         cursor.execute('SELECT b.id AS bill_id, \
-                            b.uid, \
-                            u.id AS login, \
-                            upi.fio, \
                             b.deposit AS deposit, \
-                            u.disable \
+                            u.id AS login, b.uid, b.company_id, u.disable\
                         FROM bills b \
                             LEFT JOIN users u \
-                            ON (u.uid = b.uid) \
-                            LEFT JOIN users_pi upi \
-                            ON (u.uid=upi.uid) \
+                            ON(u.uid = b.uid) \
                         WHERE b.id='+ str(n) +' limit 1 ')
                         # WHERE u.uid=" + str(n) + " limit 1 ")
         u = []
