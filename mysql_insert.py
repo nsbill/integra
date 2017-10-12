@@ -192,7 +192,8 @@ def ins_integra_check(data): # uid = userUID , sum = сумма пополнен
         st = data.get('info')                            # 
         st = int(st.get('Status'))                       # статус ответа запроса
         info_conn = str(data.get('info'))                # ответ на запрос
-        ip = data.get('remote_address')                  # запрос с какого ip адреса
+        ip = data.get('remote_address')                  # запрос с какого ip адрес
+#        login = str(data.get('Login'))                   # логин абонента
 #        ip = ipaddress.IPv4Address(str(ip))
         cursor.execute("""INSERT INTO integra_check (date,payercode,sevicename,status,info,ip) values (%s,%s,%s,%s,%s,%s)""",(time,payer_code,service_name,st,info_conn,ip))
 #        print('=== end ins integra_check ===')
@@ -228,8 +229,8 @@ def ins_integra_pay(data,info): # uid = userUID , sum = сумма пополн�
         ntran = data.get('NTran')                        # уникальный номер транзакции
         dtran = data.get('DTran')                        # дата транзакции
         s = data.get('S')                                # сумма платежа
-        login = data.get('login')                        # логин пользователя
-        uid = data.get('uid')                            # UID пользователя
+        login = str(data.get('Login'))                   # логин пользователя
+        uid = data.get('UID')                            # UID пользователя
 #        info_conn = str(data.get('info'))                # ответ на запрос
         info_conn = str(info)
         print('---INFO---')

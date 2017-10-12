@@ -43,50 +43,37 @@ def pay():
     print(details)
     info = IntegraClass(details.get('PayerCode'))
     print('WEB info')
-    aboninfo = info.aboninfo(details.get('PayerCode'))
+    info_check = info.aboninfo(details.get('PayerCode'))
     status={
-    'Status' : aboninfo.get('Status'),
+    'Status' : details.get('Status'),
     'NTran' : details.get('NTran'),
-    'FIO' : aboninfo.get('FIO'),
+    'FIO' : info_check.get('FIO'),
     'sum' : 'Недопустимая сумма платежа. Пополнения от 50 до 5000 руб',
     }
-    if int(aboninfo.get('Status')) == 0:
-        if float(details.get('S')) < 50:
-            print('Low')
-#            aboninfo['Status'] = 106
-            status['Status'] = 106
-            logpay = IntegraClass.log_pay(data=details,info=status)
-            print(logpay)
-        elif 50 <= float(details.get('S')) <= 5000:
-            pay = info.pay(details)
-            print('--PAY_INFO--')
-            print(pay)
-            details['info'] = pay
-            status['Status'] = 0
-            status['Balance'] = float(pay.get('Balance'))+float(details.get('S'))
-            status['sum'] = 'Успешно пополнен'
-            logpay = IntegraClass.log_pay(data=details,info=status)
-            print(logpay)
-            print('Mid')
-#        return str(pay)
-        else:
-            print('High')
-            status['Status'] = 106
-            logpay = IntegraClass.log_pay(data=details,info=status)
-            print(logpay)
-    elif int(aboninfo.get('Status')) == 100:
-        status['Status'] = 100
-        status['sum'] = 'Лицевой счет не найден !!!'
-        logpay = IntegraClass.log_pay(data=details,info=status)
-        print(logpay)
-    elif int(aboninfo.get('Status')) == 105:
-        status['Status'] = 105
-        status['sum'] = 'Прием платежей запрещен !!!'
-        logpay = IntegraClass.log_pay(data=details,info=status)
-        print(logpay)
-    else:
+    if float(details.get('S')) < 50:
+        print('Low')
         status['Status'] = 106
-        status['sum'] = 'Недопустимая сумма платежа !!!'
+        logpay = IntegraClass.log_pay(data=details,info=status)
+        print(logpay)
+    elif 50 <= float(details.get('S')) <= 5000:
+        pay = info.pay(details)
+        print('--PAY_INFO--')
+        print(pay)
+        details['info'] = pay
+        details['FIO'] = info_check.get('FIO')
+        status['Status'] = 0
+        print('Balance')
+        print(pay.get('Balance'))
+        print(details.get('S'))
+        status['Balance'] = float(pay.get('Balance'))+float(details.get('S'))
+        status['sum'] = 'Успешно пополнен'
+        logpay = IntegraClass.log_pay(data=details,info=status)
+        print(logpay)
+        print('Mid')
+#        return str(pay)
+    else:
+        print('High')
+        status['Status'] = 106
         logpay = IntegraClass.log_pay(data=details,info=status)
         print(logpay)
     return str(status)

@@ -1,4 +1,4 @@
-from mysql_select import query_check, query_with_deposit, query_with_invmax, query_with_docs_inv, query_with_payment # Подключения базы данных и выборка данных о пользователе.
+from mysql_select import query_with_deposit, query_with_invmax, query_with_docs_inv, query_with_payment # Подключения базы данных и выборка данных о пользователе.
 from mysql_insert import insert_with_docs_inv, insert_with_docs_inv_orders, update_with_deposit, insert_with_payment, insert_with_docs_invoice2payments, ins_integra_check, ins_integra_pay
 import random, datetime
 
@@ -10,6 +10,7 @@ class IntegraClass:
         self.check(n)
 
     def log_check(data):
+        ''' Логирование запросов check и ответ на запрос '''
         ins_data = ins_integra_check(data)
 #        print(data)
         return data
@@ -20,69 +21,82 @@ class IntegraClass:
         print(ins_data)
         return ins_data
 
-    def check(self,n):
-        ''' Запрос проверки существования лицевого счета '''
+    def aboninfo(self,n):
+        ''' Запрос проверки существования лицевого счета абонента '''
 
-        self.user = query_with_deposit(self.numbers) # Выборка данных о пользователе
-        self.users = dict()
-#        print(self.user)
-        if self.user:                               # Проверка пользователя
-            for value in self.user:                 # Записываем в словарь заначение выборки
-                self.users['Status'] = 0            # Статус: Запрос выполнен успешно
-                self.users['PayerCode'] = value[0]  # Лицевой счет
-                self.users['UID'] = value[1]        # UID пользователя
-#                self.users['login'] = value[2]     # Логин пользователя
-                self.users['FIO'] = value[3]        # Ф.И.О пользователя
-                self.users['Balance'] = value[4]    # Баланс пользователя
-                self.users['Disable'] =  value[5]   # Вкл/Откл пользователь
-#                print(self.users.get('Disable'))   # Пользователь был удален, а счет остался
-                if self.users.get('Disable') == None: # Проверка отключен пользователь в биллинге
-                   self.users['Status'] = 100       #  Статус: Лицевой счет не найден
-                   self.users['FIO'] = None
-                   self.users['Balance'] = None
-                elif self.users.get('Disable') == 0:
-                   self.users['Status'] = 0         # Статус: Запрос выполнен успешно
+        self.abon = query_with_deposit(self.numbers) # Выборка данных о пользователе
+        self.stat = dict()
+#        print(self.stat)
+        if self.abon:                                # Проверка пользователя
+            for value in self.abon:                  # Записываем в словарь заначение выборки
+                self.stat['Status'] = 0              # Статус: Запрос выполнен успешно
+                self.stat['PayerCode'] = value[0]    # Лицевой счет
+                self.stat['UID'] = value[1]          # UID пользователя
+                self.stat['Login'] = value[2]        # Логин пользователя
+                self.stat['FIO'] = value[3]          # Ф.И.О пользователя
+                self.stat['Balance'] = value[4]      # Баланс пользователя
+                self.stat['Disable'] =  value[5]     # Вкл/Откл пользователь
+#                print(self.stat.get('Disable'))     # Пользователь был удален, а счет остался
+                if self.stat.get('Disable') == None: # Проверка отключен пользователь в биллинге
+                   self.stat['Status'] = 100         #  Статус: Лицевой счет не найден
+                   self.stat['FIO'] = None
+                   self.stat['Balance'] = None
+                elif self.stat.get('Disable') == 0:
+                   self.stat['Status'] = 0           # Статус: Запрос выполнен успешно
                 else:
-                   self.users['Status'] = 105       # Статус: Прием платежей запрещен
+                   self.stat['Status'] = 105         # Статус: Прием платежей запрещен
         else:
-            self.users['Status'] = 100              # Статус: Лицевой счет не найден
+            self.stat['Status'] = 100                # Статус: Лицевой счет не найден
 
-        info = {
-            'Status': self.users.get('Status'),
-            'FIO': self.users.get('FIO'),
-            'Balance': self.users.get('Balance'),
+        info = {                                     # Ответ на запрос 
+            'Status': self.stat.get('Status'),
+            'FIO': self.stat.get('FIO'),
+            'Balance': self.stat.get('Balance'),
+            }
+        return self.stat
+
+    def check(self,PayerCode):
+        print('__CHECK__')
+        abon = (self.aboninfo('PayerCode'))
+        print(abon)
+        info = {                                     # Ответ на запрос 
+            'Status': abon.get('Status'),
+            'FIO': abon.get('FIO'),
+            'Balance': abon.get('Balance'),
             }
         return info
 
     def pay(self,details):             # Запрос пополнения лицевого счета
-        if self.users.get('Status') == 0:
+        print('__PAY_INFO___')
+        aboninfo = (self.aboninfo(details.get('PayerCode')))
+        print(aboninfo)
+        if int(aboninfo.get('Status')) == 0:
             aid = 19             # id администратора в биллинге
-            deposit = query_with_deposit(n=details.get('PayerCode'))
-            details['balance'] = deposit[0][1]
-            details['login'] = deposit[0][2]
-            details['uid'] = deposit[0][3]
-            details['disable'] = deposit[0][4]
-            details['Status'] = 0
-            details['FIO'] = details.get('FIO')
-            print (deposit[0][3])
+            print('__PAY__integra__')
             invmax = query_with_invmax()
             print(invmax)
             print(details)
             n = invmax[0][0]
             n = n + 1
             print(n)
-            ins_docs_inv = insert_with_docs_inv(n=n, a=aid, u=details.get('uid'), d=details.get('balance'))  # вставка в docs_invoices
+            ins_docs_inv = insert_with_docs_inv(n=n, a=aid, u=aboninfo.get('UID'), d=aboninfo.get('Balance'))  # вставка в docs_invoices
             print(ins_docs_inv)
-            doc_inv = query_with_docs_inv(n=details.get('uid'))
+            doc_inv = query_with_docs_inv(n=aboninfo.get('UID'))
             print(doc_inv)
             inv = doc_inv[0][0]
             ins_docs_ord = insert_with_docs_inv_orders(inv=inv, sum=details.get('S'))
             print(ins_docs_ord)
-            upd = update_with_deposit(uid=details.get('uid'), d=details.get('balance'), sum=details.get('S'))
+            upd = update_with_deposit(uid=aboninfo.get('UID'), d=aboninfo.get('Balance'), sum=details.get('S'))
             print(upd)
-            ins_payment = insert_with_payment(uid=details.get('uid'), bill_id=details.get('PayerCode'), sum=details.get('S'), ip=details.get('remote_address'), d=details.get('balance'), aid=aid)
+            ins_payment = insert_with_payment(uid=aboninfo.get('UID'),
+                            bill_id=aboninfo.get('PayerCode'),
+                            sum=details.get('S'),
+                            ip=details.get('remote_address'),
+                            d=aboninfo.get('Balance'),
+                            aid=aid,
+                            )
             print(ins_payment)
-            p = query_with_payment(n=details.get('uid'))
+            p = query_with_payment(n=aboninfo.get('UID'))
             print(p)
 
             print('---details---')
@@ -90,15 +104,15 @@ class IntegraClass:
             responce={}
             responce['Status'] = details.get('Status')
             responce['Ntran'] = details.get('NTran')
-            responce['FIO'] = details.get('FIO')
-            responce['Balance'] = details.get('balance')
+            responce['FIO'] = aboninfo.get('FIO')
+            responce['Balance'] = aboninfo.get('Balance')
             return responce
         else:
             details['Status'] = 100
             print('Status 100 PAY')
+            return self.details
         print('---PAY_USERS---')
-        print(self.users)
-        return self.users
+        return self.aboninfo
 
     def reconciliation(self):  # Запрос на сверку взаиморасчетов
         pass
