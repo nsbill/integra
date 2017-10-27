@@ -127,3 +127,24 @@ def query_with_payment(n):
         return u
     if __name__ == '__main__':
         query_with_payment(n)
+
+def query_with_logpay(n):
+    try:
+        dbconfig = read_db_config()
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        cursor.execute('SELECT id,payercode,status,s,DATE_FORMAT(date, "%Y%m%d%H%i%s"),info FROM integra_pay where ntran='+ str(n) +' ORDER BY -id limit 1 ')
+
+        u = []
+        for row in iter_row(cursor, 10):
+            u.append(row)
+
+    except Error as e:
+        print(e)
+
+    finally:
+        cursor.close()
+        conn.close()
+        return u
+    if __name__ == '__main__':
+        query_with_logpay(n)

@@ -1,4 +1,4 @@
-from mysql_select import query_with_deposit, query_with_invmax, query_with_docs_inv, query_with_payment # Подключения базы данных и выборка данных о пользователе.
+from mysql_select import query_with_deposit, query_with_invmax, query_with_docs_inv, query_with_payment, query_with_logpay # Подключения базы данных и выборка данных о пользователе.
 from mysql_insert import insert_with_docs_inv, insert_with_docs_inv_orders, update_with_deposit, insert_with_payment, insert_with_docs_invoice2payments, ins_integra_check, ins_integra_pay
 import random, datetime
 
@@ -16,9 +16,10 @@ class IntegraClass:
         return data
 
     def log_pay(data,info='LogPayNull'):
-        print('---LOG_PAY---')
+        ''' Логирование запросов pay и ответ на запрос '''
+#        print('---LOG_PAY---')
         ins_data = ins_integra_pay(data,info)
-        print(ins_data)
+#        print(ins_data)
         return ins_data
 
     def aboninfo(self,n):
@@ -56,6 +57,7 @@ class IntegraClass:
         return self.stat
 
     def check(self,PayerCode):
+        ''' Статус пользователя ''' 
         print('__CHECK__')
         abon = (self.aboninfo('PayerCode'))
         print(abon)
@@ -66,7 +68,8 @@ class IntegraClass:
             }
         return info
 
-    def pay(self,details):             # Запрос пополнения лицевого счета
+    def pay(self,details):
+        ''' Запрос пополнения лицевого счета '''
         print('__PAY_INFO___')
         aboninfo = (self.aboninfo(details.get('PayerCode')))
         print(aboninfo)
@@ -117,8 +120,31 @@ class IntegraClass:
     def reconciliation(self):  # Запрос на сверку взаиморасчетов
         pass
 
-    def cancel(self):          # Запрос на отмену пополнения лицевого счета
-        pass
+    def cancel(self,NTran,infopay=None):
+        ''' Запрос на отмену пополнения лицевого счета '''
+        print('__CANCEL___')
+        log_pay = query_with_logpay(n=NTran)  # Выборка из логов о оплатах по номеру транзакции
+        print(log_pay)
+        print(infopay)
+        if log_pay:                           # Проверка на существования платежа
+            if 0 == int(log_pay[0][2]):       # Проверка статуса. 0 - существ. 100 - нет платежа или ощибка
+                print('LogPayStatus=0')
+                quety_pay = dict(zip(['PayerCode','S','DTran'],[str(log_pay[0][1]),str(log_pay[0][3]),str(log_pay[0][4])])) # Выборка из лог. по платежам создаем словарь PayerCode,S,DTran
+                print(quety_pay)
+                quety_pay = [quety_pay.get('PayerCode'),quety_pay.get('DTran'),float(quety_pay.get('S'))]  # Создаем список
+                print(quety_pay)
+                quety_st = [infopay.get('PayerCode'),infopay.get('DTran'),float(infopay.get('S'))]         # Создаем список
+                print(quety_st)
+                if quety_pay == quety_st:       # Сравнение данных полученных с лога и запроса
+                    print('True')
+                else:
+                    print('False')
+
+
+            else:
+                print('LogStatus=100')
+
+        print('STATUS=100')
 
 if __name__ == '__main__':
    IntegraClass()
@@ -227,7 +253,7 @@ http://10.10.10.10:8080/cancel?PayerCode=0502369&ServiceName=Интернет&NT
 Пример ответа:
 {
 "Status": "0",
-"NTran": &quot;0000125466",
+"NTran": "0000125466",
 "FIO": "Иванов Иван Иванович"
 }
 '''
