@@ -139,8 +139,8 @@ def query_with_logpay(n):
         u = []
         for row in iter_row(cursor, 10):
             u.append(row)
-        print('__log_pay__')
-        print(u)
+#        print('__log_pay__')
+#        print(u)
     except Error as e:
         print(e)
 

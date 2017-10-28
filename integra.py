@@ -89,6 +89,14 @@ class IntegraClass:
             invmax = query_with_invmax()
             print(invmax)
             print(details)
+#            LogNTranPay = query_with_logpay(details.get('NTran'))
+#            print('LogNTranPay')
+#            print(LogNTranPay)
+#            LogNTranPay = LogNTranPay[0][5][1]
+#            print(LogNTranPay)
+#            print(LogNTranPay.get('NTran'))
+#            if int(details.get('NTran')) == :
+#                print('Number NTran YES')
             n = invmax[0][0]
             n = n + 1
             print(n)
@@ -161,7 +169,7 @@ class IntegraClass:
                     infopay['last_deposit']=user[0][4]  # депозит до списания
                     infopay['aid']=19                   # ID Администратора
                     infopay['Status'] = 0               # Статус
-                    infopay['Login'] = user[0][1]       # Логин пользователя
+                    infopay['Login'] = user[0][2]       # Логин пользователя
                     logcancel = query_with_logcancel(n=NTran)
                     print('__logcancel__')
                     print(logcancel)
@@ -175,32 +183,55 @@ class IntegraClass:
 #                                'DSC':'Access Deny повторная попытка списания !!!',
 #                                }
                             info['FIO'] = user[0][3]
-                            info['DSC'] = 'Access Deny повторная попытка списания !!!'
+                            info['DSC'] = 'Access Deny повторная попытка списания!'
+                            print('__ins_integra_log_cancel__infopay__')
+                            print(infopay)
+                            infopay['Status'] = 100
+                            infopay['INFO'] = 'Error. Повторное списание'
+                            ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel   
                             return info
-                        else:
-                           update_cancel_deposit(PayerCode=infopay.get('PayerCode'),S=infopay.get('S'))  # обновить депозит
-                           ins_integra_cancel(infopay)         # Внести данные в биллинг по отмене
-                           ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel
-                           info['Status'] = 0
+                        elif logcancel[0][1]==100:
+                           info['Status'] = 100
                            info['FIO'] = user[0][3]
-                           info['DSC'] = 'Отмена платежа успешна!'
+                           info['DSC'] = 'Error. Повторная попытка списания!'
+                           infopay['Status'] = 100
+                           infopay['INFO'] = 'Error. Повторное списание'
+                           ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel
+                           return info
+                        else:
+                           info['Status'] = 100
+                           info['DSC'] = 'Error. Нет данных!'
+                           infopay['Status'] = 100
+                           infopay['INFO'] = 'Error. Нет данных'
+                           ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel
                            return info
                     else:
                        update_cancel_deposit(PayerCode=infopay.get('PayerCode'),S=infopay.get('S'))  # обновить депозит
                        ins_integra_cancel(infopay)         # Внести данные в биллинг по отмене
-                       ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel   
 #                    inner_describe=Описание списания
 #                    method = Метод списания
                        info['Status'] = 0
                        info['FIO'] = user[0][3]
-                       info['DSC'] = 'Отмена платежа успешна!'
+                       info['DSC'] = 'Платеж отменен успешно'
+                       infopay['INFO'] = 'Платеж отменен успешно'
+                       ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel   
                        return info
                 else:
                    print('False')
+                   infopay['Status'] = 100
+                   infopay['INFO'] = 'Error. Неверные данные'
+                   ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel
                    return info
             else:
-                print('LogStatus=100')
-                return info
+               print('LogStatus=100')
+               infopay['Status'] = 100
+               infopay['INFO'] = 'Error. Неверные данные'
+               ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel
+               return info
+
+        infopay['Status'] = 100
+        infopay['INFO'] = 'Error. Неверные данные'
+        ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel
         return info
 
 if __name__ == '__main__':

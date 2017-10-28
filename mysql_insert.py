@@ -363,8 +363,8 @@ def ins_integra_log_cancel(infopay):
         last_deposit = infopay.get('last_deposit')          # текущий депозит
         ip = infopay.get('remote_address')                  # запрос с какого ip адреса
         ip = int(ipaddress.IPv4Address(ip))
-        login = infopay.get('UID')                            # UID пользователя
-        info = ''
+        login = infopay.get('Login')                            # UID пользователя
+        info = infopay.get('INFO')
 #        aid = infopay.get('aid')                            # Администратор
 #        vat = float(0.0)                                    # ???
 #        inner_describe = 'Отмена пополнения Integra'        # Описание списания
