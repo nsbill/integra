@@ -138,7 +138,6 @@ def query_with_logpay(n):
         u = []
         for row in iter_row(cursor, 10):
             u.append(row)
-
     except Error as e:
         print(e)
 
@@ -148,3 +147,45 @@ def query_with_logpay(n):
         return u
     if __name__ == '__main__':
         query_with_logpay(n)
+
+def query_with_logcancel(n):
+    try:
+        dbconfig = read_db_config()
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        cursor.execute('SELECT payercode,status,DATE_FORMAT(dtran, "%Y%m%d%H%i%s"),s FROM integra_cancel where ntran='+ str(n) +' ORDER BY -id limit 1 ')
+
+        u = []
+        for row in iter_row(cursor, 10):
+            u.append(row)
+
+    except Error as e:
+        print(e)
+
+    finally:
+        cursor.close()
+        conn.close()
+        return u
+    if __name__ == '__main__':
+        query_with_logcancel(n)
+
+def query_with_user(PayerCode):
+    try:
+        dbconfig = read_db_config()
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        cursor.execute('SELECT uid,id FROM users where bill_id='+ str(PayerCode) +' ORDER BY -id limit 1 ')
+
+        u = []
+        for row in iter_row(cursor, 10):
+            u.append(row)
+
+    except Error as e:
+        print(e)
+
+    finally:
+        cursor.close()
+        conn.close()
+        return u
+    if __name__ == '__main__':
+        query_with_user(PayerCode)

@@ -79,7 +79,6 @@ def insert_with_docs_inv_orders(inv,sum): # inv = inv_docs , sum = сумма п
     if __name__ == '__main__':
         insert_with_docs_inv_orders(inv, sum)
 
-
 def update_with_deposit(uid,d,sum): # uid = userUID , sum = сумма пополнения, d = депозит до пополнения
     try:
         dbconfig = read_db_config()
@@ -257,3 +256,138 @@ def ins_integra_pay(data,info): # uid = userUID , sum = сумма пополн�
 
     if __name__ == '__main__':
          ins_integra_pay(data,info)
+
+def update_cancel_deposit(PayerCode,S): # PayerCode = bill_ID , sum = сумма списания
+    try:
+        dbconfig = read_db_config()
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        print('=== cancel deposit===')
+        print(PayerCode)
+        print(S)
+        cursor.execute('UPDATE bills SET deposit=deposit-'+ str(S) +' WHERE id='+ str(PayerCode) +' ')
+        print('===end cancel deposit===')
+
+        all = {}
+
+        for row in iter_row(cursor, 10):
+            all = row
+            print(all)
+        return all
+    except Error as e:
+        print(e)
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    if __name__ == '__main__':
+        update_with_deposit(uid, d, sum)
+
+#INSERT INTO fees (uid, bill_id, date, sum, dsc, ip, last_deposit, aid, vat, inner_describe, method) 
+#values ('2241', '2254', now(), '51', 'Отмена платежа',INET_ATON('127.0.0.1'), '69.160000', '16','0.00', 'Integra_cancel', '6')
+
+def ins_integra_cancel(infopay):
+    '''Вставка о списании в таб. fees
+    uid = user_ID
+    bill_id = лицевой счет
+    date= дата списания
+    sum = сумма списания
+    dsc = Отмена платежа
+    ip = IPAddress
+    last_deposit = депозит до списания
+    aid = Администратор
+    vat = ?
+    inner_describe=Описание списания
+    method = Метод списания
+    '''
+    try:
+        dbconfig = read_db_config()
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        print('===ins integra_cancel ===')
+        print(infopay)
+        uid = infopay.get('UID')                            # UID пользователя
+        payer_code = str(infopay.get('PayerCode'))          # лицевой счет
+        date = datetime.datetime.now().strftime("%Y%m%d%H%M%S") # время запроса
+        sum = infopay.get('S')                              # сумма списания
+        dsc = str(infopay.get('ServiceName'))               # наименование услуги
+        ip = infopay.get('remote_address')                  # запрос с какого ip адреса
+        ip = int(ipaddress.IPv4Address(ip))
+#        ip = ipaddress.IPv4Address(str(ip))
+        last_deposit = infopay.get('last_deposit')          # текущий депозит
+        aid = infopay.get('aid')                            # Администратор
+        vat = float(0.0)                                    # ???
+        inner_describe = 'Отмена пополнения Integra'        # Описание списания
+        method = int(6)                                     # Метод списания
+#        st = int(info.get('Status'))                       # статус ответа запроса
+#        ntran = data.get('NTran')                        # уникальный номер транзакции
+#        dtran = data.get('DTran')                        # дата транзакции
+#        login = str(data.get('Login'))                   # логин пользователя
+#        info_conn = str(data.get('info'))                # ответ на запрос
+#        info_conn = str(info)
+#        info_conn['login'] = str(login)
+        cursor.execute("""INSERT INTO fees (uid, bill_id, date, sum, dsc, ip, last_deposit, aid, vat, inner_describe, method) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",(uid, payer_code, date, sum, dsc, ip, last_deposit, aid, vat, inner_describe, method))
+        print('=== end ins integra_cancel ===')
+        all = {}
+
+        for row in iter_row(cursor, 10):
+            all = row
+            print(all)
+#        return all
+    except Error as e:
+        print(e)
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    if __name__ == '__main__':
+         ins_integra_cancel(infopay)
+
+def ins_integra_log_cancel(infopay):
+    '''Логирование в таб. integra_cancel'''
+    try:
+        dbconfig = read_db_config()
+        conn = MySQLConnection(**dbconfig)
+        cursor = conn.cursor()
+        print('===ins integra_log_cancel ===')
+        print(infopay)
+        date = datetime.datetime.now().strftime("%Y%m%d%H%M%S") # время запроса
+        payercode = str(infopay.get('PayerCode'))          # лицевой счет
+        sevicename = str(infopay.get('ServiceName'))        # наименование услуги
+        status = int(infopay.get('Status'))                 # статус ответа запроса
+        ntran = infopay.get('NTran')                        # уникальный номер транзакции
+        dtran = infopay.get('DTran')                        # дата транзакции
+        s = infopay.get('S')                              # сумма списания
+        last_deposit = infopay.get('last_deposit')          # текущий депозит
+        ip = infopay.get('remote_address')                  # запрос с какого ip адреса
+        ip = int(ipaddress.IPv4Address(ip))
+        login = infopay.get('UID')                            # UID пользователя
+        info = ''
+#        aid = infopay.get('aid')                            # Администратор
+#        vat = float(0.0)                                    # ???
+#        inner_describe = 'Отмена пополнения Integra'        # Описание списания
+#        method = int(6)                                     # Метод списания
+#        login = str(data.get('Login'))                   # логин пользователя
+#        info_conn = str(data.get('info'))                # ответ на запрос
+#        info_conn = str(info)
+#        info_conn['login'] = str(login)
+        cursor.execute("""INSERT INTO integra_cancel (date, payercode, sevicename, status, ntran, dtran, s, last_deposit, ip, login, info) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",(date, payercode, sevicename, status, ntran, dtran, s, last_deposit, ip, login, info))
+        print('=== end ins integra_log_cancel ===')
+        all = {}
+
+        for row in iter_row(cursor, 10):
+            all = row
+            print(all)
+#        return all
+    except Error as e:
+        print(e)
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    if __name__ == '__main__':
+         ins_integra_log_cancel(infopay)
+

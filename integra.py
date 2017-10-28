@@ -1,5 +1,5 @@
-from mysql_select import query_with_deposit, query_with_invmax, query_with_docs_inv, query_with_payment, query_with_logpay # Подключения базы данных и выборка данных о пользователе.
-from mysql_insert import insert_with_docs_inv, insert_with_docs_inv_orders, update_with_deposit, insert_with_payment, insert_with_docs_invoice2payments, ins_integra_check, ins_integra_pay
+from mysql_select import query_with_deposit, query_with_invmax, query_with_docs_inv, query_with_payment, query_with_logpay, query_with_logcancel, query_with_user # Подключения базы данных и выборка данных о пользователе.
+from mysql_insert import insert_with_docs_inv, insert_with_docs_inv_orders, update_with_deposit, insert_with_payment, insert_with_docs_invoice2payments, ins_integra_check, ins_integra_pay, update_cancel_deposit, ins_integra_cancel, ins_integra_log_cancel
 import random, datetime
 
 class IntegraClass:
@@ -19,6 +19,13 @@ class IntegraClass:
         ''' Логирование запросов pay и ответ на запрос '''
 #        print('---LOG_PAY---')
         ins_data = ins_integra_pay(data,info)
+#        print(ins_data)
+        return ins_data
+
+    def log_cancel(info='LogPayNull'):
+        ''' Логирование запросов cancel и ответ на запрос '''
+        print('---LOG_CANCEL---')
+        ins_data = ins_integra_cancel(info)
 #        print(ins_data)
         return ins_data
 
@@ -109,6 +116,8 @@ class IntegraClass:
             responce['Ntran'] = details.get('NTran')
             responce['FIO'] = aboninfo.get('FIO')
             responce['Balance'] = aboninfo.get('Balance')
+            print('__pay_responce__')
+            print(responce)
             return responce
         else:
             details['Status'] = 100
@@ -123,28 +132,46 @@ class IntegraClass:
     def cancel(self,NTran,infopay=None):
         ''' Запрос на отмену пополнения лицевого счета '''
         print('__CANCEL___')
+        print(NTran)
         log_pay = query_with_logpay(n=NTran)  # Выборка из логов о оплатах по номеру транзакции
         print(log_pay)
         print(infopay)
         if log_pay:                           # Проверка на существования платежа
             if 0 == int(log_pay[0][2]):       # Проверка статуса. 0 - существ. 100 - нет платежа или ощибка
-                print('LogPayStatus=0')
-                quety_pay = dict(zip(['PayerCode','S','DTran'],[str(log_pay[0][1]),str(log_pay[0][3]),str(log_pay[0][4])])) # Выборка из лог. по платежам создаем словарь PayerCode,S,DTran
+                quetypay = dict(zip(['PayerCode','S','DTran'],[str(log_pay[0][1]),str(log_pay[0][3]),str(log_pay[0][4])])) # Выборка из лог. по платежам создаем словарь PayerCode,S,DTran
+                print(quetypay)
+                quety_pay = [quetypay.get('PayerCode'),quetypay.get('DTran'),float(quetypay.get('S'))]  # Создаем список log
                 print(quety_pay)
-                quety_pay = [quety_pay.get('PayerCode'),quety_pay.get('DTran'),float(quety_pay.get('S'))]  # Создаем список
-                print(quety_pay)
-                quety_st = [infopay.get('PayerCode'),infopay.get('DTran'),float(infopay.get('S'))]         # Создаем список
+                quety_st = [infopay.get('PayerCode'),infopay.get('DTran'),float(infopay.get('S'))]         # Создаем список query
                 print(quety_st)
                 if quety_pay == quety_st:       # Сравнение данных полученных с лога и запроса
                     print('True')
+                    user = query_with_deposit(n=infopay.get('PayerCode'))  # получить логин и uid пользователя
+                    print(user)
+                    infopay['UID']=user[0][1]           #  user_ID
+                    infopay['last_deposit']=user[0][4]  # депозит до списания
+                    infopay['aid']=19                   # ID Администратора
+                    infopay['Status'] = 0               # Статус
+                    logcancel = query_with_logcancel(n=NTran)
+                    print('__logcancel__')
+                    print(logcancel)
+                    if logcancel:
+                        if logcancel[0][1]==0:
+                            print('Access Deny повторная попытка списания !!!')
+                        else:
+                           update_cancel_deposit(PayerCode=infopay.get('PayerCode'),S=infopay.get('S'))  # обновить депозит
+                           ins_integra_cancel(infopay)         # Внести данные в биллинг по отмене
+                           ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel
+                    else:
+                       update_cancel_deposit(PayerCode=infopay.get('PayerCode'),S=infopay.get('S'))  # обновить депозит
+                       ins_integra_cancel(infopay)         # Внести данные в биллинг по отмене
+                       ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel
+#                    inner_describe=Описание списания
+#                    method = Метод списания
                 else:
                     print('False')
-
-
             else:
                 print('LogStatus=100')
-
-        print('STATUS=100')
 
 if __name__ == '__main__':
    IntegraClass()

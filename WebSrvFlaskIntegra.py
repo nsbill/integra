@@ -53,6 +53,7 @@ def pay():
         if float(details.get('S')) < 50:  # если сумма платежа меньше 50 руб.
 #            print('Low')
             status['Status'] = 106
+            details['Login'] = aboninfo.get('Login')
             logpay = IntegraClass.log_pay(data=details,info=status)  # логирование запроса и ответа
 #            print(logpay)
         elif 50 <= float(details.get('S')) <= 5000:  #
@@ -61,10 +62,12 @@ def pay():
             status['Status'] = 0
             status['Balance'] = float(pay.get('Balance'))+float(details.get('S'))
             status['sum'] = 'Успешно пополнен'
+            details['Login'] = aboninfo.get('Login')
             logpay = IntegraClass.log_pay(data=details,info=status)
 #            print(logpay)
         else:
             status['Status'] = 106
+            details['Login'] = aboninfo.get('Login')
             logpay = IntegraClass.log_pay(data=details,info=status)
 #            print(logpay)
     elif int(aboninfo.get('Status')) == 100:
@@ -107,9 +110,11 @@ def cancel():
 
 #    info = IntegraClass(data.get('PayerCode'))
     info = IntegraClass()
+    print('__IntegraClass_Web__')
     print(info)
-    info = info.cancel(data['NTran'],data)
+    info = info.cancel(data.get('NTran'),data)
     data['info'] =  info
+    print('__INFO_CANCEL__')
     print(info)
 #    checklog = IntegraClass.log_check(data=data)      # Логирование запроса и ответа
     return str(info)
