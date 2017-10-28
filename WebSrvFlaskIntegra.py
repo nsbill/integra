@@ -61,7 +61,7 @@ def pay():
             details['info'] = pay
             status['Status'] = 0
             status['Balance'] = float(pay.get('Balance'))+float(details.get('S'))
-            status['sum'] = 'Успешно пополнен'
+            status['DSC'] = 'Успешно пополнен'
             details['Login'] = aboninfo.get('Login')
             logpay = IntegraClass.log_pay(data=details,info=status)
 #            print(logpay)
@@ -72,17 +72,17 @@ def pay():
 #            print(logpay)
     elif int(aboninfo.get('Status')) == 100:
         status['Status'] = 100
-        status['sum'] = 'Лицевой счет не найден !!!'
+        status['DSC'] = 'Лицевой счет не найден !!!'
         logpay = IntegraClass.log_pay(data=details,info=status)
         print(logpay)
     elif int(aboninfo.get('Status')) == 105:
         status['Status'] = 105
-        status['sum'] = 'Прием платежей запрещен !!!'
+        status['DSC'] = 'Прием платежей запрещен !!!'
         logpay = IntegraClass.log_pay(data=details,info=status)
         print(logpay)
     else:
         status['Status'] = 106
-        status['sum'] = 'Недопустимая сумма платежа !!!'
+        status['DSC'] = 'Недопустимая сумма платежа !!!'
         logpay = IntegraClass.log_pay(data=details,info=status)
         print(logpay)
     return str(status)

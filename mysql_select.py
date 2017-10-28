@@ -133,11 +133,14 @@ def query_with_logpay(n):
         dbconfig = read_db_config()
         conn = MySQLConnection(**dbconfig)
         cursor = conn.cursor()
-        cursor.execute('SELECT id,payercode,status,s,DATE_FORMAT(date, "%Y%m%d%H%i%s"),info FROM integra_pay where ntran='+ str(n) +' ORDER BY -id limit 1 ')
+#        cursor.execute('SELECT id,payercode,status,s,DATE_FORMAT(date, "%Y%m%d%H%i%s"),info FROM integra_pay where ntran='+ str(n) +' ORDER BY -id limit 1 ')
+        cursor.execute('SELECT id,payercode,status,s,DATE_FORMAT(dtran, "%Y%m%d%H%i%s"),info FROM integra_pay where ntran='+ str(n) +' ORDER BY -id limit 1 ')
 
         u = []
         for row in iter_row(cursor, 10):
             u.append(row)
+        print('__log_pay__')
+        print(u)
     except Error as e:
         print(e)
 

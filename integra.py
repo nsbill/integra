@@ -68,11 +68,14 @@ class IntegraClass:
         print('__CHECK__')
         abon = (self.aboninfo('PayerCode'))
         print(abon)
-        info = {                                     # Ответ на запрос 
-            'Status': abon.get('Status'),
-            'FIO': abon.get('FIO'),
-            'Balance': abon.get('Balance'),
-            }
+        print('__Check_info__')
+        info = {}                                     # Ответ на запрос 
+        if abon.get('Status') == 0:
+            info['Status'] = abon.get('Status')
+            info['FIO'] = abon.get('FIO')
+            info['Balance'] = abon.get('Balance')
+        else:
+            info['Status'] = abon.get('Status')
         return info
 
     def pay(self,details):
@@ -136,6 +139,12 @@ class IntegraClass:
         log_pay = query_with_logpay(n=NTran)  # Выборка из логов о оплатах по номеру транзакции
         print(log_pay)
         print(infopay)
+
+        info = {
+            'Status':100,
+            'NTran': NTran,
+            'DSC': 'Error!',
+            }
         if log_pay:                           # Проверка на существования платежа
             if 0 == int(log_pay[0][2]):       # Проверка статуса. 0 - существ. 100 - нет платежа или ощибка
                 quetypay = dict(zip(['PayerCode','S','DTran'],[str(log_pay[0][1]),str(log_pay[0][3]),str(log_pay[0][4])])) # Выборка из лог. по платежам создаем словарь PayerCode,S,DTran
@@ -152,26 +161,47 @@ class IntegraClass:
                     infopay['last_deposit']=user[0][4]  # депозит до списания
                     infopay['aid']=19                   # ID Администратора
                     infopay['Status'] = 0               # Статус
+                    infopay['Login'] = user[0][1]       # Логин пользователя
                     logcancel = query_with_logcancel(n=NTran)
                     print('__logcancel__')
                     print(logcancel)
                     if logcancel:
                         if logcancel[0][1]==0:
-                            print('Access Deny повторная попытка списания !!!')
+                            print('Access Deny! Повторное списание!')
+#                            info = {
+#                                'Status':100,
+#                                'NTran': NTran,
+#                                'FIO': user[0][3],
+#                                'DSC':'Access Deny повторная попытка списания !!!',
+#                                }
+                            info['FIO'] = user[0][3]
+                            info['DSC'] = 'Access Deny повторная попытка списания !!!'
+                            return info
                         else:
                            update_cancel_deposit(PayerCode=infopay.get('PayerCode'),S=infopay.get('S'))  # обновить депозит
                            ins_integra_cancel(infopay)         # Внести данные в биллинг по отмене
                            ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel
+                           info['Status'] = 0
+                           info['FIO'] = user[0][3]
+                           info['DSC'] = 'Отмена платежа успешна!'
+                           return info
                     else:
                        update_cancel_deposit(PayerCode=infopay.get('PayerCode'),S=infopay.get('S'))  # обновить депозит
                        ins_integra_cancel(infopay)         # Внести данные в биллинг по отмене
-                       ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel
+                       ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel   
 #                    inner_describe=Описание списания
 #                    method = Метод списания
+                       info['Status'] = 0
+                       info['FIO'] = user[0][3]
+                       info['DSC'] = 'Отмена платежа успешна!'
+                       return info
                 else:
-                    print('False')
+                   print('False')
+                   return info
             else:
                 print('LogStatus=100')
+                return info
+        return info
 
 if __name__ == '__main__':
    IntegraClass()
