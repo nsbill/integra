@@ -86,17 +86,26 @@ class IntegraClass:
         if int(aboninfo.get('Status')) == 0:
             aid = 19             # id администратора в биллинге
             print('__PAY__integra__')
+            LogNTranPay = query_with_logpay(details.get('NTran'))
+            print('LogNTranPay')
+            if LogNTranPay:
+                if int(details['NTran']) == int(LogNTranPay[0][6]):
+                    print('__NTran PAY__')
+                    responce={}
+                    responce['Status'] = 105
+                    responce['Ntran'] = details.get('NTran')
+                    responce['FIO'] = aboninfo.get('FIO')
+                    responce['Balance'] = aboninfo.get('Balance')
+                    responce['DSC'] = 'Access Deny. Существует NTran.'
+                    return responce
+                print('__pay_responce__')
+                print(responce)
+                responce['Status'] = 0
+                print(responce)
+                return responce
             invmax = query_with_invmax()
             print(invmax)
             print(details)
-#            LogNTranPay = query_with_logpay(details.get('NTran'))
-#            print('LogNTranPay')
-#            print(LogNTranPay)
-#            LogNTranPay = LogNTranPay[0][5][1]
-#            print(LogNTranPay)
-#            print(LogNTranPay.get('NTran'))
-#            if int(details.get('NTran')) == :
-#                print('Number NTran YES')
             n = invmax[0][0]
             n = n + 1
             print(n)
@@ -129,6 +138,7 @@ class IntegraClass:
             responce['Balance'] = aboninfo.get('Balance')
             print('__pay_responce__')
             print(responce)
+            responce['Status'] = 0
             return responce
         else:
             details['Status'] = 100

@@ -58,12 +58,21 @@ def pay():
 #            print(logpay)
         elif 50 <= float(details.get('S')) <= 5000:  #
             pay = info.pay(details)
-            details['info'] = pay
-            status['Status'] = 0
-            status['Balance'] = float(pay.get('Balance'))+float(details.get('S'))
-            status['DSC'] = 'Успешно пополнен'
-            details['Login'] = aboninfo.get('Login')
-            logpay = IntegraClass.log_pay(data=details,info=status)
+            if int(pay.get('Status'))==105:
+                print('__pay_W__')
+                print(pay)
+                details['info'] = pay
+                status['Status'] = 105
+                status['DSC'] = pay.get('DSC')
+                details['Login'] = aboninfo.get('Login')
+                logpay = IntegraClass.log_pay(data=details,info=status)
+            else:
+                details['info'] = pay
+                status['Status'] = 0
+                status['Balance'] = float(pay.get('Balance'))+float(details.get('S'))
+                status['DSC'] = 'Успешно пополнен'
+                details['Login'] = aboninfo.get('Login')
+                logpay = IntegraClass.log_pay(data=details,info=status)
 #            print(logpay)
         else:
             status['Status'] = 106

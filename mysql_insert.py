@@ -125,11 +125,11 @@ def insert_with_payment(uid,bill_id,sum,ip,d,aid): # uid = userUID , sum = су�
         ip = str(ip)
         ip = int(ipaddress.IPv4Address(ip))
         print(ip)
-        cursor.execute('INSERT INTO payments (uid, bill_id, date, sum, dsc, ip, last_deposit, aid, method, ext_id, \
-                                    inner_describe, amount, currency) \
-                        values ('+ str(uid) +', '+ str(bill_id) +', '+ str(now) +', '+ str(sum) +', "", '+str(ip)+', \
-                         '+ str(d) +', '+ str(aid) +', 2,"", "", '+ str(sum) +', 0 ) ')
-
+        dsc = str('пополнение Integra')
+        print(dsc)
+        inner_describe=str('Пополнение за интернет')
+        cursor.execute("""INSERT INTO payments (uid, bill_id, date, sum, dsc, ip, last_deposit, aid, method, ext_id, \
+                      inner_describe, amount, currency) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""",(uid,bill_id,now,sum,dsc,ip,d,aid,2,"",inner_describe,sum,0))
         print('===end ins payments===')
         all = {}
 
