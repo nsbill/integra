@@ -18,12 +18,16 @@ def check():
 #        'date': now.strftime("%Y%m%d%H%M%S"),        # Время запроса  
         'date': now,
     }
-
-    info = IntegraClass(data.get('PayerCode'))
-    info = info.check(data)
-    data['info'] =  info
-    checklog = IntegraClass.log_check(data=data)      # Логирование запроса и ответа
-    return str(info)
+    print('__Check_DATA__')
+    if data.get('PayerCode'):
+        info = IntegraClass(data.get('PayerCode'))
+        info = info.check(data)
+        data['info'] =  info
+        checklog = IntegraClass.log_check(data=data)      # Логирование запроса и ответа
+        return str(info)
+    else:
+        info = '{\'Status\': 105 }'
+        return str(info)
 
 @app.route('/pay', methods=['GET'])
 
@@ -40,61 +44,66 @@ def pay():
     'S' : request.args['S'],                       # Сумма платежа
     'remote_address' : request.remote_addr,        # IP адрес
      }
-    info = IntegraClass(details.get('PayerCode'))  #  Выборка данных об абоненте
-    aboninfo = info.aboninfo(details.get('PayerCode')) # создаем словарь 
-    status={
-    'Status' : aboninfo.get('Status'),
-    'NTran' : details.get('NTran'),
-    'FIO' : aboninfo.get('FIO'),
+    if details.get('PayerCode') and details.get('NTran') and details.get('DTran') and details.get('S'):
+        print('__NONE__')
+        info = IntegraClass(details.get('PayerCode'))  #  Выборка данных об абоненте
+        aboninfo = info.aboninfo(details.get('PayerCode')) # создаем словарь 
+        status={
+        'Status' : aboninfo.get('Status'),
+        'NTran' : details.get('NTran'),
+        'FIO' : aboninfo.get('FIO'),
 #    'sum' : 'Недопустимая сумма платежа. Пополнения от 50 до 5000 руб',
-    }
+        }
 
-    if int(aboninfo.get('Status')) == 0:  # проверяем статус 
-        if float(details.get('S')) < 50:  # если сумма платежа меньше 50 руб.
+        if int(aboninfo.get('Status')) == 0:  # проверяем статус 
+            if float(details.get('S')) < 50:  # если сумма платежа меньше 50 руб.
 #            print('Low')
-            status['Status'] = 106
-            details['Login'] = aboninfo.get('Login')
-            logpay = IntegraClass.log_pay(data=details,info=status)  # логирование запроса и ответа
-#            print(logpay)
-        elif 50 <= float(details.get('S')) <= 5000:  #
-            pay = info.pay(details)
-            if int(pay.get('Status'))==105:
-                print('__pay_W__')
-                print(pay)
-                details['info'] = pay
-                status['Status'] = 105
-                status['DSC'] = pay.get('DSC')
+                status['Status'] = 106
                 details['Login'] = aboninfo.get('Login')
-                logpay = IntegraClass.log_pay(data=details,info=status)
+                logpay = IntegraClass.log_pay(data=details,info=status)  # логирование запроса и ответа
+#            print(logpay)
+            elif 50 <= float(details.get('S')) <= 5000:  #
+                pay = info.pay(details)
+                if int(pay.get('Status'))==105:
+                    print('__pay_W__')
+                    print(pay)
+                    details['info'] = pay
+                    status['Status'] = 0
+                    status['DSC'] = pay.get('DSC')
+                    details['Login'] = aboninfo.get('Login')
+                    logpay = IntegraClass.log_pay(data=details,info=status)
+                else:
+                    details['info'] = pay
+                    status['Status'] = 0
+                    status['Balance'] = float(pay.get('Balance'))+float(details.get('S'))
+                    status['DSC'] = 'Успешно пополнен'
+                    details['Login'] = aboninfo.get('Login')
+                    logpay = IntegraClass.log_pay(data=details,info=status)
+#            print(logpay)
             else:
-                details['info'] = pay
-                status['Status'] = 0
-                status['Balance'] = float(pay.get('Balance'))+float(details.get('S'))
-                status['DSC'] = 'Успешно пополнен'
+                status['Status'] = 106
                 details['Login'] = aboninfo.get('Login')
                 logpay = IntegraClass.log_pay(data=details,info=status)
 #            print(logpay)
+        elif int(aboninfo.get('Status')) == 100:
+            status['Status'] = 100
+            status['DSC'] = 'Лицевой счет не найден !!!'
+            logpay = IntegraClass.log_pay(data=details,info=status)
+            print(logpay)
+        elif int(aboninfo.get('Status')) == 105:
+            status['Status'] = 105
+            status['DSC'] = 'Прием платежей запрещен !!!'
+            logpay = IntegraClass.log_pay(data=details,info=status)
+            print(logpay)
         else:
             status['Status'] = 106
-            details['Login'] = aboninfo.get('Login')
+            status['DSC'] = 'Недопустимая сумма платежа !!!'
             logpay = IntegraClass.log_pay(data=details,info=status)
-#            print(logpay)
-    elif int(aboninfo.get('Status')) == 100:
-        status['Status'] = 100
-        status['DSC'] = 'Лицевой счет не найден !!!'
-        logpay = IntegraClass.log_pay(data=details,info=status)
-        print(logpay)
-    elif int(aboninfo.get('Status')) == 105:
-        status['Status'] = 105
-        status['DSC'] = 'Прием платежей запрещен !!!'
-        logpay = IntegraClass.log_pay(data=details,info=status)
-        print(logpay)
+            print(logpay)
+        return str(status)
     else:
-        status['Status'] = 106
-        status['DSC'] = 'Недопустимая сумма платежа !!!'
-        logpay = IntegraClass.log_pay(data=details,info=status)
-        print(logpay)
-    return str(status)
+        info = '{\'Status\': 105 }'
+        return str(info)
 
 
 @app.route('/cancel', methods=['GET'])
@@ -117,16 +126,20 @@ def cancel():
     print('__Cancel__query__')
     print(data)
 
+    if data.get('PayerCode') and data.get('NTran') and data.get('DTran') and data.get('S'):
 #    info = IntegraClass(data.get('PayerCode'))
-    info = IntegraClass()
-    print('__IntegraClass_Web__')
-    print(info)
-    info = info.cancel(data.get('NTran'),data)
-    data['info'] =  info
-    print('__INFO_CANCEL__')
-    print(info)
+        info = IntegraClass()
+        print('__IntegraClass_Web__')
+        print(info)
+        info = info.cancel(data.get('NTran'),data)
+        data['info'] =  info
+        print('__INFO_CANCEL__')
+        print(info)
 #    checklog = IntegraClass.log_check(data=data)      # Логирование запроса и ответа
-    return str(info)
+        return str(info)
+    else:
+        info = '{\'Status\': 105 }'
+        return str(info)
 
 if __name__ == '__main__':
     app.run('127.0.0.10',6969)

@@ -110,7 +110,7 @@ def update_with_deposit(uid,d,sum): # uid = userUID , sum = сумма попо�
     if __name__ == '__main__':
         update_with_deposit(uid, d, sum)
 
-def insert_with_payment(uid,bill_id,sum,ip,d,aid): # uid = userUID , sum = сумма пополнения, d = депозит до пополнения, ip = IPAddress
+def insert_with_payment(uid,bill_id,sum,ip,d,aid,ntran): # uid = userUID , sum = сумма пополнения, d = депозит до пополнения, ip = IPAddress
     try:
         dbconfig = read_db_config()
         conn = MySQLConnection(**dbconfig)
@@ -125,7 +125,7 @@ def insert_with_payment(uid,bill_id,sum,ip,d,aid): # uid = userUID , sum = су�
         ip = str(ip)
         ip = int(ipaddress.IPv4Address(ip))
         print(ip)
-        dsc = str('пополнение Integra')
+        dsc = 'пополнение Integra №%s' % ntran
         print(dsc)
         inner_describe=str('Пополнение за интернет')
         cursor.execute("""INSERT INTO payments (uid, bill_id, date, sum, dsc, ip, last_deposit, aid, method, ext_id, \
@@ -318,7 +318,7 @@ def ins_integra_cancel(infopay):
         last_deposit = infopay.get('last_deposit')          # текущий депозит
         aid = infopay.get('aid')                            # Администратор
         vat = float(0.0)                                    # ???
-        inner_describe = 'Отмена пополнения Integra'        # Описание списания
+        inner_describe = 'Отмена пополнения Integra №%s' % infopay.get('NTran')        # Описание списания
         method = int(6)                                     # Метод списания
 #        st = int(info.get('Status'))                       # статус ответа запроса
 #        ntran = data.get('NTran')                        # уникальный номер транзакции

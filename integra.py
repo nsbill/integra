@@ -124,6 +124,7 @@ class IntegraClass:
                             ip=details.get('remote_address'),
                             d=aboninfo.get('Balance'),
                             aid=aid,
+                            ntran=details.get('NTran'),
                             )
             print(ins_payment)
             p = query_with_payment(n=aboninfo.get('UID'))
@@ -186,12 +187,6 @@ class IntegraClass:
                     if logcancel:
                         if logcancel[0][1]==0:
                             print('Access Deny! Повторное списание!')
-#                            info = {
-#                                'Status':100,
-#                                'NTran': NTran,
-#                                'FIO': user[0][3],
-#                                'DSC':'Access Deny повторная попытка списания !!!',
-#                                }
                             info['FIO'] = user[0][3]
                             info['DSC'] = 'Access Deny повторная попытка списания!'
                             print('__ins_integra_log_cancel__infopay__')
