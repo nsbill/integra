@@ -2,8 +2,18 @@
 from flask import Flask, request
 from integra import IntegraClass
 import datetime
+import logging
+from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
+
+
+@app.route('/')
+def foo():
+    app.logger.warning('A warning occurred (%d apples)', 42)
+    app.logger.error('An error occurred')
+    app.logger.info('Info')
+    return "foo"
 
 @app.route('/check', methods=['GET'])
 
@@ -24,6 +34,9 @@ def check():
         info = info.check(data)
         data['info'] =  info
         checklog = IntegraClass.log_check(data=data)      # Логирование запроса и ответа
+        app.logger.warning('[ %s ] CHECK  %s' % (now, data))
+#        app.logger.error('An error occurred')
+#        app.logger.info('Info')
         return str(info)
     else:
         info = '{\'Status\': 105 }'
@@ -44,6 +57,7 @@ def pay():
     'S' : request.args['S'],                       # Сумма платежа
     'remote_address' : request.remote_addr,        # IP адрес
      }
+    app.logger.warning('[ %s ] PAY  %s' % (now, details))
     if details.get('PayerCode') and details.get('NTran') and details.get('DTran') and details.get('S'):
         print('__NONE__')
         info = IntegraClass(details.get('PayerCode'))  #  Выборка данных об абоненте
@@ -123,6 +137,7 @@ def cancel():
 #        'date': now.strftime("%Y%m%d%H%M%S"),        # Время запроса  
         'date': now,
     }
+    app.logger.warning('[ %s ] CANCEL  %s' % (now, data))
     print('__Cancel__query__')
     print(data)
 
@@ -142,4 +157,7 @@ def cancel():
         return str(info)
 
 if __name__ == '__main__':
+    handler = RotatingFileHandler('foo.log', maxBytes=10000, backupCount=1)
+    handler.setLevel(logging.INFO)
+    app.logger.addHandler(handler)
     app.run('127.0.0.10',6969)
