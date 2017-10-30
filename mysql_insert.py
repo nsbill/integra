@@ -311,7 +311,8 @@ def ins_integra_cancel(infopay):
         payer_code = str(infopay.get('PayerCode'))          # лицевой счет
         date = datetime.datetime.now().strftime("%Y%m%d%H%M%S") # время запроса
         sum = infopay.get('S')                              # сумма списания
-        dsc = str(infopay.get('ServiceName'))               # наименование услуги
+#        dsc = str(infopay.get('ServiceName'))               # наименование услуги
+        dsc = 'отмена платежа Integra №%s' % infopay.get('NTran')
         ip = infopay.get('remote_address')                  # запрос с какого ip адреса
         ip = int(ipaddress.IPv4Address(ip))
 #        ip = ipaddress.IPv4Address(str(ip))
