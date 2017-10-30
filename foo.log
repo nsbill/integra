@@ -57,3 +57,7 @@ TypeError: Object of type 'IntegraClass' is not JSON serializable
 [ 2017-10-30 11:05:18.900631 ] CHECK  {'PayerCode': '2254', 'ServiceName': 'Интернет', 'remote_address': '176.121.197.211', 'date': datetime.datetime(2017, 10, 30, 11, 5, 18, 900631), 'info': {'Status': 105}}
 [ 2017-10-30 11:05:28.440392 ] CHECK  {'PayerCode': '2251', 'ServiceName': 'Интернет', 'remote_address': '176.121.197.211', 'date': datetime.datetime(2017, 10, 30, 11, 5, 28, 440392), 'info': {'Status': 0, 'FIO': 'Кириченко Александр Викторович', 'Balance': 250.0}}
 [ 2017-10-30 11:05:45.332925 ] CHECK  {'PayerCode': '2254', 'ServiceName': 'Интернет', 'remote_address': '176.121.197.211', 'date': datetime.datetime(2017, 10, 30, 11, 5, 45, 332925), 'info': {'Status': 105}}
+A warning occurred (42 apples)
+An error occurred
+A warning occurred (42 apples)
+An error occurred

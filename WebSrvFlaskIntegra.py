@@ -11,10 +11,10 @@ app = Flask(__name__)
 
 @app.route('/')
 def foo():
-    app.logger.warning('A warning occurred (%d apples)', 42)
-    app.logger.error('An error occurred')
-    app.logger.info('Info')
-    return "foo"
+#    app.logger.warning('A warning occurred (%d apples)', 42)
+#    app.logger.error('An error occurred')
+#    app.logger.info('Info')
+    return "Access Deny"
 
 @app.route('/check', methods=['GET'])
 
@@ -35,10 +35,10 @@ def check():
         info = info.check(data)
         data['info'] =  info
         checklog = IntegraClass.log_check(data=data)      # Логирование запроса и ответа
-        app.logger.warning('[ %s ] CHECK  %s' % (now, data))
+        app.logger.warning('[ %s ] CHECK  %s' % (now, data)) # Логирование запросов в файл integra.log
 #        app.logger.error('An error occurred')
 #        app.logger.info('Info')
-        info = json.dumps(info, ensure_ascii=False)
+        info = json.dumps(info, ensure_ascii=False)          # в JSON
         return str(info)
     else:
         info = '{\'Status\': 105 }'
@@ -164,7 +164,7 @@ def cancel():
         return str(info)
 
 if __name__ == '__main__':
-    handler = RotatingFileHandler('foo.log', maxBytes=10000, backupCount=1)
+    handler = RotatingFileHandler('integra.log', maxBytes=10000, backupCount=1)
     handler.setLevel(logging.INFO)
     app.logger.addHandler(handler)
     app.run('127.0.0.10',6969)
