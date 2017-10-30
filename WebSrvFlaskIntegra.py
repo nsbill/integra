@@ -4,6 +4,7 @@ from integra import IntegraClass
 import datetime
 import logging
 from logging.handlers import RotatingFileHandler
+import json
 
 app = Flask(__name__)
 
@@ -37,9 +38,11 @@ def check():
         app.logger.warning('[ %s ] CHECK  %s' % (now, data))
 #        app.logger.error('An error occurred')
 #        app.logger.info('Info')
+        info = json.dumps(info, ensure_ascii=False)
         return str(info)
     else:
         info = '{\'Status\': 105 }'
+        info = json.dumps(info, ensure_ascii=False)
         return str(info)
 
 @app.route('/pay', methods=['GET'])
@@ -114,9 +117,11 @@ def pay():
             status['DSC'] = 'Недопустимая сумма платежа !!!'
             logpay = IntegraClass.log_pay(data=details,info=status)
             print(logpay)
+        status = json.dumps(status, ensure_ascii=False)
         return str(status)
     else:
         info = '{\'Status\': 105 }'
+        info = json.dumps(info, ensure_ascii=False)
         return str(info)
 
 
@@ -151,9 +156,11 @@ def cancel():
         print('__INFO_CANCEL__')
         print(info)
 #    checklog = IntegraClass.log_check(data=data)      # Логирование запроса и ответа
+        info = json.dumps(info, ensure_ascii=False)
         return str(info)
     else:
         info = '{\'Status\': 105 }'
+        info = json.dumps(info, ensure_ascii=False)
         return str(info)
 
 if __name__ == '__main__':

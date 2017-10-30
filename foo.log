@@ -1,1 +1,42 @@
 
+[ 2017-10-30 09:37:34.409405 ] CANCEL  {'PayerCode': '2254', 'ServiceName': 'Интернет', 'remote_address': '176.121.197.211', 'NTran': '2800125466', 'DTran': '20170101175859', 'S': '53', 'date': datetime.datetime(2017, 10, 30, 9, 37, 34, 409405)}
+[ 2017-10-30 10:04:24.376191 ] CHECK  {'PayerCode': '2254', 'ServiceName': 'Интернет', 'remote_address': '176.121.197.211', 'date': datetime.datetime(2017, 10, 30, 10, 4, 24, 376191), 'info': {'Status': 0, 'FIO': 'Тестовая Учетка', 'Balance': 0.0}}
+[ 2017-10-30 10:04:55.956705 ] CHECK  {'PayerCode': '22254', 'ServiceName': 'Интернет', 'remote_address': '176.121.197.211', 'date': datetime.datetime(2017, 10, 30, 10, 4, 55, 956705), 'info': {'Status': 100}}
+[ 2017-10-30 10:05:04.444622 ] CHECK  {'PayerCode': '2254', 'ServiceName': 'Интернет', 'remote_address': '176.121.197.211', 'date': datetime.datetime(2017, 10, 30, 10, 5, 4, 444622), 'info': {'Status': 0, 'FIO': 'Тестовая Учетка', 'Balance': 0.0}}
+[ 2017-10-30 10:07:11.845845 ] CHECK  {'PayerCode': '2254', 'ServiceName': 'Интернет', 'remote_address': '176.121.197.211', 'date': datetime.datetime(2017, 10, 30, 10, 7, 11, 845845), 'info': {'Status': 0, 'FIO': 'Тестовая Учетка', 'Balance': 0.0}}
+[ 2017-10-30 10:10:09.212825 ] CHECK  {'PayerCode': '254', 'ServiceName': 'Интернет', 'remote_address': '176.121.197.211', 'date': datetime.datetime(2017, 10, 30, 10, 10, 9, 212825), 'info': {'Status': 100}}
+[ 2017-10-30 10:10:15.878168 ] CHECK  {'PayerCode': '2254', 'ServiceName': 'Интернет', 'remote_address': '176.121.197.211', 'date': datetime.datetime(2017, 10, 30, 10, 10, 15, 878168), 'info': {'Status': 0, 'FIO': 'Тестовая Учетка', 'Balance': 0.0}}
+[ 2017-10-30 10:10:23.918712 ] CHECK  {'PayerCode': '2254', 'ServiceName': '', 'remote_address': '176.121.197.211', 'date': datetime.datetime(2017, 10, 30, 10, 10, 23, 918712), 'info': {'Status': 0, 'FIO': 'Тестовая Учетка', 'Balance': 0.0}}
+[ 2017-10-30 10:10:37.764812 ] PAY  {'date': datetime.datetime(2017, 10, 30, 10, 10, 37, 764812), 'PayerCode': '2254', 'ServiceName': 'Интернет', 'NTran': '0800125466', 'DTran': '20170101175859', 'S': '5', 'remote_address': '176.121.197.211'}
+Exception on /pay [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.6/site-packages/flask/app.py", line 1982, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python3.6/site-packages/flask/app.py", line 1614, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python3.6/site-packages/flask/app.py", line 1517, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/usr/local/lib/python3.6/site-packages/flask/_compat.py", line 33, in reraise
+    raise value
+  File "/usr/local/lib/python3.6/site-packages/flask/app.py", line 1612, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python3.6/site-packages/flask/app.py", line 1598, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "./WebSrvFlaskIntegra.py", line 120, in pay
+    status = json.dumps(info, ensure_ascii=False)
+  File "/usr/local/lib/python3.6/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+  File "/usr/local/lib/python3.6/json/encoder.py", line 199, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/usr/local/lib/python3.6/json/encoder.py", line 257, in iterencode
+    return _iterencode(o, 0)
+  File "/usr/local/lib/python3.6/json/encoder.py", line 180, in default
+    o.__class__.__name__)
+TypeError: Object of type 'IntegraClass' is not JSON serializable
+[ 2017-10-30 10:13:08.101499 ] PAY  {'date': datetime.datetime(2017, 10, 30, 10, 13, 8, 101499), 'PayerCode': '2254', 'ServiceName': 'Интернет', 'NTran': '0800125466', 'DTran': '20170101175859', 'S': '5', 'remote_address': '176.121.197.211'}
+[ 2017-10-30 10:13:24.367869 ] PAY  {'date': datetime.datetime(2017, 10, 30, 10, 13, 24, 367869), 'PayerCode': '2254', 'ServiceName': 'Интернет', 'NTran': '0800125466', 'DTran': '20170101175859', 'S': '5222', 'remote_address': '176.121.197.211'}
+[ 2017-10-30 10:13:30.001995 ] PAY  {'date': datetime.datetime(2017, 10, 30, 10, 13, 30, 1995), 'PayerCode': '22524', 'ServiceName': 'Интернет', 'NTran': '0800125466', 'DTran': '20170101175859', 'S': '5222', 'remote_address': '176.121.197.211'}
+[ 2017-10-30 10:13:39.864555 ] PAY  {'date': datetime.datetime(2017, 10, 30, 10, 13, 39, 864555), 'PayerCode': '2254', 'ServiceName': 'Интернет', 'NTran': '0800125466', 'DTran': '20170101175859', 'S': '52', 'remote_address': '176.121.197.211'}
+[ 2017-10-30 10:14:04.985230 ] PAY  {'date': datetime.datetime(2017, 10, 30, 10, 14, 4, 985230), 'PayerCode': '2254', 'ServiceName': 'Интернет', 'NTran': '3800125466', 'DTran': '20171101175859', 'S': '52', 'remote_address': '176.121.197.211'}
+[ 2017-10-30 10:14:18.270046 ] CANCEL  {'PayerCode': '2254', 'ServiceName': 'Интернет', 'remote_address': '176.121.197.211', 'NTran': '3800125466', 'DTran': '20171101175859', 'S': '52', 'date': datetime.datetime(2017, 10, 30, 10, 14, 18, 270046)}
+[ 2017-10-30 10:14:42.188143 ] CANCEL  {'PayerCode': '2254', 'ServiceName': 'Интернет', 'remote_address': '176.121.197.211', 'NTran': '3800125466', 'DTran': '20171101175859', 'S': '52', 'date': datetime.datetime(2017, 10, 30, 10, 14, 42, 188143)}
