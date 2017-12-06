@@ -1,4 +1,5 @@
-from mysql_select import query_check  # Подключения базы данных и выборка данных о пользователе.
+from mysql_select import query_with_deposit, query_with_invmax, query_with_docs_inv, query_with_payment, query_with_logpay, query_with_logcancel, query_with_user # Подключения базы данных и выборка данных о пользователе.
+from mysql_insert import insert_with_docs_inv, insert_with_docs_inv_orders, update_with_deposit, insert_with_payment, insert_with_docs_invoice2payments, ins_integra_check, ins_integra_pay, update_cancel_deposit, ins_integra_cancel, ins_integra_log_cancel
 import random, datetime
 
 class IntegraClass:
@@ -7,97 +8,242 @@ class IntegraClass:
     def __init__(self,n=0):
         self.numbers = n
         self.check(n)
-#        return print(self.check(n))
 
-    def check(self,n):           # Запрос проверки существования лицевого счета
-        self.user = query_check(self.numbers)
-        self.users = dict()
-        if self.user:
-            for value in self.user:
-                self.users['Status'] = 0
-#                self.users['uid'] = value[0]
-#                self.users['PayerCode'] = value[1]
-                self.users['fio'] = value[2]
-            return self.users
-        else:
-            self.users['Status'] = 100
-#            print(self.users)
-        return self.users
+    def log_check(data):
+        ''' Логирование запросов check и ответ на запрос '''
+        ins_data = ins_integra_check(data)
+#        print(data)
+        return data
 
-    def pay(self,p):             # Запрос пополнения лицевого счета
-        if self.users.get('Status') == 0:
-            self.PayerCode = p
-            self.check(p)
-            print(self.check(p))
-            print(self.PayerCode)
-            print('Status 0')
-            print('--- dict pay ---')
-            self.users['ServiceName'] = 'Internet'
-            self.users['PayerCode'] = self.numbers
-            print('--- dict end pay ---')
-            print(self.users)
+    def log_pay(data,info='LogPayNull'):
+        ''' Логирование запросов pay и ответ на запрос '''
+#        print('---LOG_PAY---')
+        ins_data = ins_integra_pay(data,info)
+#        print(ins_data)
+        return ins_data
+
+    def log_cancel(info='LogPayNull'):
+        ''' Логирование запросов cancel и ответ на запрос '''
+        print('---LOG_CANCEL---')
+        ins_data = ins_integra_cancel(info)
+#        print(ins_data)
+        return ins_data
+
+    def aboninfo(self,n):
+        ''' Запрос проверки существования лицевого счета абонента '''
+
+        self.abon = query_with_deposit(self.numbers) # Выборка данных о пользователе
+        self.stat = dict()
+#        print(self.stat)
+        if self.abon:                                # Проверка пользователя
+            for value in self.abon:                  # Записываем в словарь заначение выборки
+                self.stat['Status'] = 0              # Статус: Запрос выполнен успешно
+                self.stat['PayerCode'] = value[1]    # Лицевой счет UID
+                self.stat['BillID'] = value[0]       # Денежный счет
+                print(value[1])
+                self.stat['UID'] = value[1]          # UID пользователя
+                self.stat['Login'] = value[2]        # Логин пользователя
+                self.stat['FIO'] = value[3]          # Ф.И.О пользователя
+                self.stat['Balance'] = value[4]      # Баланс пользователя
+                self.stat['Disable'] =  value[5]     # Вкл/Откл пользователь
+#                print(self.stat.get('Disable'))     # Пользователь был удален, а счет остался
+                if self.stat.get('Disable') == None: # Проверка отключен пользователь в биллинге
+                   self.stat['Status'] = 100         #  Статус: Лицевой счет не найден
+                   self.stat['FIO'] = None
+                   self.stat['Balance'] = None
+                elif self.stat.get('Disable') == 0:
+                   self.stat['Status'] = 0           # Статус: Запрос выполнен успешно
+                else:
+                   self.stat['Status'] = 105         # Статус: Прием платежей запрещен
         else:
-            print('Status 100')
+            self.stat['Status'] = 100                # Статус: Лицевой счет не найден
+
+        info = {                                     # Ответ на запрос 
+            'Status': self.stat.get('Status'),
+            'FIO': self.stat.get('FIO'),
+            'Balance': self.stat.get('Balance'),
+            }
+        return self.stat
+
+    def check(self,PayerCode):
+        ''' Статус пользователя ''' 
+        print('__CHECK__')
+        abon = (self.aboninfo('PayerCode'))
+        print(abon)
+        print('__Check_info__')
+        info = {}                                     # Ответ на запрос 
+        if abon.get('Status') == 0:
+            info['Status'] = abon.get('Status')
+            info['FIO'] = abon.get('FIO')
+            info['Balance'] = abon.get('Balance')
+        else:
+            info['Status'] = abon.get('Status')
+        return info
+
+    def pay(self,details):
+        ''' Запрос пополнения лицевого счета '''
+        print('__PAY_INFO___')
+        aboninfo = (self.aboninfo(details.get('PayerCode')))
+        print(aboninfo)
+        if int(aboninfo.get('Status')) == 0:
+            aid = 19             # id администратора в биллинге
+            print('__PAY__integra__')
+            LogNTranPay = query_with_logpay(details.get('NTran'))
+            print('LogNTranPay')
+            if LogNTranPay:
+                if int(details['NTran']) == int(LogNTranPay[0][6]):
+                    print('__NTran PAY__')
+                    responce={}
+                    responce['Status'] = 105
+                    responce['Ntran'] = details.get('NTran')
+                    responce['FIO'] = aboninfo.get('FIO')
+                    responce['Balance'] = aboninfo.get('Balance')
+                    responce['DSC'] = 'Access Deny. Существует NTran.'
+                    return responce
+                print('__pay_responce__')
+                print(responce)
+                responce['Status'] = 0
+                print(responce)
+                return responce
+            invmax = query_with_invmax()
+            print(invmax)
+            print(details)
+            n = invmax[0][0]
+            n = n + 1
+            print(n)
+            ins_docs_inv = insert_with_docs_inv(n=n, a=aid, u=aboninfo.get('UID'), d=aboninfo.get('Balance'))  # вставка в docs_invoices
+            print(ins_docs_inv)
+            doc_inv = query_with_docs_inv(n=aboninfo.get('UID'))
+            print(doc_inv)
+            inv = doc_inv[0][0]
+            ins_docs_ord = insert_with_docs_inv_orders(inv=inv, sum=details.get('S'))
+            print(ins_docs_ord)
+            upd = update_with_deposit(uid=aboninfo.get('UID'), d=aboninfo.get('Balance'), sum=details.get('S'))
+            print(upd)
+            ins_payment = insert_with_payment(uid=aboninfo.get('UID'),
+                            bill_id=aboninfo.get('BillID'),
+                            sum=details.get('S'),
+                            ip=details.get('remote_address'),
+                            d=aboninfo.get('Balance'),
+                            aid=aid,
+                            ntran=details.get('NTran'),
+                            )
+            print(ins_payment)
+            p = query_with_payment(n=aboninfo.get('UID'))
+            print(p)
+
+            print('---details---')
+            print(details)
+            responce={}
+            responce['Status'] = details.get('Status')
+            responce['Ntran'] = details.get('NTran')
+            responce['FIO'] = aboninfo.get('FIO')
+            responce['Balance'] = aboninfo.get('Balance')
+            print('__pay_responce__')
+            print(responce)
+            responce['Status'] = 0
+            return responce
+        else:
+            details['Status'] = 100
+            print('Status 100 PAY')
+            return self.details
+        print('---PAY_USERS---')
+        return self.aboninfo
 
     def reconciliation(self):  # Запрос на сверку взаиморасчетов
         pass
 
-    def cancel(self):          # Запрос на отмену пополнения лицевого счета
-        pass
+    def cancel(self,NTran,infopay=None):
+        ''' Запрос на отмену пополнения лицевого счета '''
+        print('__CANCEL___')
+        print(NTran)
+        log_pay = query_with_logpay(n=NTran)  # Выборка из логов о оплатах по номеру транзакции
+        print(log_pay)
+        print(infopay)
+
+        info = {
+            'Status':100,
+            'NTran': NTran,
+            'DSC': 'Error!',
+            }
+        if log_pay:                           # Проверка на существования платежа
+            if 0 == int(log_pay[0][2]):       # Проверка статуса. 0 - существ. 100 - нет платежа или ощибка
+                quetypay = dict(zip(['PayerCode','S','DTran'],[str(log_pay[0][1]),str(log_pay[0][3]),str(log_pay[0][4])])) # Выборка из лог. по платежам создаем словарь PayerCode,S,DTran
+                print(quetypay)
+                quety_pay = [quetypay.get('PayerCode'),quetypay.get('DTran'),float(quetypay.get('S'))]  # Создаем список log
+                print(quety_pay)
+                quety_st = [infopay.get('PayerCode'),infopay.get('DTran'),float(infopay.get('S'))]         # Создаем список query
+                print(quety_st)
+                if quety_pay == quety_st:       # Сравнение данных полученных с лога и запроса
+                    print('True')
+                    user = query_with_deposit(n=infopay.get('PayerCode'))  # получить логин и uid пользователя
+                    print(user)
+                    infopay['UID']=user[0][1]           #  user_ID
+                    infopay['last_deposit']=user[0][4]  # депозит до списания
+                    infopay['aid']=19                   # ID Администратора
+                    infopay['Status'] = 0               # Статус
+                    infopay['Login'] = user[0][2]       # Логин пользователя
+                    infopay['BillID'] = user[0][0]      # Денежный счет
+                    logcancel = query_with_logcancel(n=NTran)
+                    print('__logcancel__')
+                    print(logcancel)
+                    if logcancel:
+                        if logcancel[0][1]==0:
+                            print('Access Deny! Повторное списание!')
+                            info['FIO'] = user[0][3]
+                            info['DSC'] = 'Access Deny повторная попытка списания!'
+                            print('__ins_integra_log_cancel__infopay__')
+                            print(infopay)
+                            infopay['Status'] = 100
+                            infopay['INFO'] = 'Error. Повторное списание'
+                            ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel   
+                            return info
+                        elif logcancel[0][1]==100:
+                           info['Status'] = 100
+                           info['FIO'] = user[0][3]
+                           info['DSC'] = 'Error. Повторная попытка списания!'
+                           infopay['Status'] = 100
+                           infopay['INFO'] = 'Error. Повторное списание'
+                           ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel
+                           return info
+                        else:
+                           info['Status'] = 100
+                           info['DSC'] = 'Error. Нет данных!'
+                           infopay['Status'] = 100
+                           infopay['INFO'] = 'Error. Нет данных'
+                           ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel
+                           return info
+                    else:
+                       update_cancel_deposit(PayerCode=infopay.get('PayerCode'),S=infopay.get('S'))  # обновить депозит
+                       ins_integra_cancel(infopay)         # Внести данные в биллинг по отмене
+#                    inner_describe=Описание списания
+#                    method = Метод списания
+                       info['Status'] = 0
+                       info['FIO'] = user[0][3]
+                       info['DSC'] = 'Платеж отменен успешно'
+                       infopay['INFO'] = 'Платеж отменен успешно'
+                       ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel   
+                       return info
+                else:
+                   print('False')
+                   infopay['Status'] = 100
+                   infopay['INFO'] = 'Error. Неверные данные'
+                   ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel
+                   return info
+            else:
+               print('LogStatus=100')
+               infopay['Status'] = 100
+               infopay['INFO'] = 'Error. Неверные данные'
+               ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel
+               return info
+
+        infopay['Status'] = 100
+        infopay['INFO'] = 'Error. Неверные данные'
+        ins_integra_log_cancel(infopay)     # Логирование отмен в таб. integra_cancel
+        return info
 
 if __name__ == '__main__':
    IntegraClass()
-
-#    def pay(self,p):             # Запрос пополнения лицевого счета
-#        if self.users.get('Status') == 0:
-#            now = datetime.datetime.now()
-#            #print(self.users)
-#            #print(p)
-#            print('Status 0')
-#            print('--- dict pay ---')
-#            self.users['ServiceName'] = 'Internet'
-#            self.users['PayerCode'] = self.numbers
-#            l = list('123456789')
-#            random.shuffle(l)
-#            psw = ''.join([random.choice(l) for x in range(10)])
-#            self.users['NTran'] = psw
-#            self.users['DTran'] = now.strftime("%Y%m%d%H%M%S")
-#            self.users['S'] = p
-#            print('--- dict end pay ---')
-#            print(self.users)
-#        else:
-#            print('Status 100')
-#        #print(self.users)
-#        #self.numbers = self.numbers + p
-#        #self.s = self.check(p)
-#        #print(self.s)
-#
- 
-# def mwhere(self,n):
-#           if n <= 0:
-#                self.where = "отсутствуют"
-#           elif 0 < n < 100:
-#                self.where = "малый склад"
-#           else:
-#                self.where = "основной склад"
-#
-#      def plus(self,p):
-#           self.numbers = self.numbers + p
-#           self.mwhere(self.numbers)
-#      def minus(self,m):
-#           self.numbers = self.numbers - m
-#           self.mwhere(self.numbers)
-#
-# m1 = Building("доски", "белые",50)
-# m2 = Building("доски", "коричневые", 300)
-# m3 = Building("кирпичи","белые")
-#
-# print (m1.what,m1.color,m1.where)
-# print (m2.what,m2.color,m2.where)
-# print (m3.what,m3.color,m3.where)
-#
-# m1.plus(500)
-# print (m1.numbers, m1.where)
 
 '''
 Приложение 1
@@ -177,7 +323,7 @@ http://10.10.10.10:8080/cancel?PayerCode=0502369&ServiceName=Интернет&NT
 Пример ответа:
 {
 "Status": "0",
-"NTran": &quot;0000125466",
+"NTran": "0000125466",
 "FIO": "Иванов Иван Иванович"
 }
 '''
